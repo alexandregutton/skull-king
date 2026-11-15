@@ -454,6 +454,7 @@ table.board{border-collapse:separate;border-spacing:0;width:100%;min-width:max-c
   .nav button span{display:block}
   .nav button svg{width:20px;height:20px}
   .brand svg{width:36px;height:36px}
+  .topbar.full .brand > div{display:none}
   .rank-strip{grid-template-columns:1fr;gap:8px;margin-bottom:16px}
   .rank-card{padding:8px 12px;gap:10px}
   .rank-card .rk{font-size:22px;width:22px}
@@ -492,7 +493,16 @@ table.board{border-collapse:separate;border-spacing:0;width:100%;min-width:max-c
 }
 .install{display:flex;gap:12px;align-items:center;margin-top:22px;padding:14px 16px}
 .install svg{width:28px;height:28px;flex:none;color:var(--gold-lo)}
-.install .share{display:inline-block;width:18px;height:18px;vertical-align:-3px}
+svg.share{display:inline-block;width:18px;height:18px;vertical-align:-3px}
+.share-lead{margin:4px 0 14px;font-size:17px}
+.qr{width:min(240px,66vw);aspect-ratio:1;margin:0 auto 16px;padding:10px;border-radius:14px;background:#fffaf0;box-shadow:0 0 0 2px var(--gold-lo),0 0 0 6px rgba(217,173,75,.18),0 6px 16px rgba(0,0,0,.2);display:grid;place-items:center}
+.qr svg{width:100%;height:100%;display:block}
+.qr-wait{font-size:15px;color:var(--ink-soft);text-align:center;padding:10px}
+.link-row{display:flex;gap:8px;align-items:center}
+.link-row input{flex:1;width:0;min-width:0;height:40px;border-radius:8px;border:1px solid rgba(42,28,16,.3);background:rgba(255,253,245,.85);padding:0 10px;color:var(--ink);font-size:16px}
+.share-native{width:100%;margin-top:10px}
+.steps{margin:16px 0 0;padding-left:22px;font-size:15px;color:var(--ink-soft);display:grid;gap:4px}
+.steps b{color:var(--ink)}
 @keyframes sheet{from{transform:translateY(100%)}}
 @media (hover:none),(max-width:640px){
   .stepper button{width:40px;height:40px}
@@ -581,6 +591,8 @@ const I = {
   download: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>`,
   upload: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M4 21h16"/></svg>`,
   share: `<svg class="share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>`,
+  send: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>`,
+  copy: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>`,
   phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>`,
   flag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg>`,
   /* icônes des bonus */
@@ -705,11 +717,12 @@ function render(){
 function topbar(){
   const g = db.current;
   const item = (view, icon, label, extra='') => `<button data-a="nav" data-v="${view}" ${extra} ${ui.view===view && !(view==='board' && ui.boardId) ? 'aria-current="page"' : ''}>${I[icon]}<span>${label}</span></button>`;
-  return `<header class="topbar"><div class="topbar-in">
+  return `<header class="topbar ${g ? 'full' : ''}"><div class="topbar-in">
     <button class="brand" data-a="nav" data-v="home" aria-label="Retour au port">${I.emblem}<div><div class="brand-t">Skull King</div><div class="brand-s">Carnet de bord</div></div></button>
     <nav class="nav" aria-label="Navigation">
       ${item('home','anchor','Port')}
       ${g ? item('play','wheel','Manche') + item('board','board','Classement') : ''}
+      <button data-a="share" ${ui.modal && ui.modal.type==='share' ? 'aria-current="page"' : ''}>${I.send}<span>Partager</span></button>
       <button data-a="rules">${I.book}<span>Règles</span></button>
     </nav>
   </div></header>`;
@@ -768,6 +781,7 @@ function viewHome(){
   </div>
   ${installHint()}
   <div class="foot-tools">
+    <button class="btn btn-ghost btn-sm" data-a="share">${I.send} Partager l’app</button>
     <button class="btn btn-ghost btn-sm" data-a="export">${I.download} Exporter les scores</button>
     <button class="btn btn-ghost btn-sm" data-a="import">${I.upload} Importer</button>
   </div>`;
@@ -1241,6 +1255,23 @@ function viewModal(){
       <div class="dlg-actions">${last
         ? `<button class="btn btn-gold" data-a="closeSummary">${I.crown} Découvrir le podium</button>`
         : `<button class="btn btn-ghost" data-a="closeSummaryBoard">${I.board} Classement</button><button class="btn btn-gold" data-a="closeSummary">${I.ship} Manche ${i+2} · ${g.rounds[i+1].cards} carte${g.rounds[i+1].cards>1?'s':''}</button>`}</div></div>`;
+  } else if (m.type === 'share'){
+    const url = appUrl();
+    inner = `<div class="parch dialog share-dlg" role="dialog" aria-modal="true" aria-labelledby="dlgT">
+      <div class="row" style="justify-content:space-between;flex-wrap:nowrap"><h2 id="dlgT">Partager l’app</h2><button class="icon-btn" data-a="closeModal" aria-label="Fermer">${I.x}</button></div>
+      <p class="share-lead">Faites scanner ce code avec l’appareil photo de vos amis, ou envoyez-leur le lien.</p>
+      <div class="qr" id="qrBox">${ui.qrSvg && ui.qrFor === url ? ui.qrSvg : `<div class="qr-wait">${ui.qrError ? 'QR code indisponible hors ligne.<br>Utilisez le lien ci-dessous.' : 'Préparation du QR code…'}</div>`}</div>
+      <div class="link-row">
+        <input type="text" readonly value="${esc(url)}" id="shareLink" aria-label="Lien de l’app">
+        <button class="btn btn-wood btn-sm" data-a="copyLink">${I.copy} Copier</button>
+      </div>
+      ${navigator.share ? `<button class="btn btn-gold share-native" data-a="nativeShare">${I.send} Envoyer le lien…</button>` : ''}
+      <ol class="steps">
+        <li>Ouvrir le lien dans <b>Safari</b> sur iPhone.</li>
+        <li>Toucher ${I.share} <b>Partager</b>, puis <b>« Sur l’écran d’accueil »</b>.</li>
+        <li>Chacun garde ses propres parties sur son téléphone : rien n’est partagé à part l’app.</li>
+      </ol>
+    </div>`;
   } else if (m.type === 'rules'){
     inner = `<div class="parch dialog wide rules" role="dialog" aria-modal="true" aria-labelledby="dlgT">
       <div class="row" style="justify-content:space-between"><h2 id="dlgT">Aide-mémoire</h2><button class="icon-btn" data-a="closeModal" aria-label="Fermer">${I.x}</button></div>
@@ -1277,6 +1308,36 @@ function viewModal(){
     </div>`;
   }
   return `<div class="overlay" data-a="overlay">${inner}</div>`;
+}
+function appUrl(){ return location.origin + location.pathname.replace(/index\.html$/, ''); }
+let qrLib = null;
+function loadQR(){
+  if (window.qrcode) return Promise.resolve(window.qrcode);
+  if (!qrLib) qrLib = new Promise((res, rej) => {
+    const sc = document.createElement('script');
+    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
+    sc.integrity = 'sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1';
+    sc.crossOrigin = 'anonymous';
+    sc.onload = () => window.qrcode ? res(window.qrcode) : rej();
+    sc.onerror = () => { qrLib = null; sc.remove(); rej(); };
+    document.head.appendChild(sc);
+  });
+  return qrLib;
+}
+function buildQR(text){
+  return loadQR().then(q => {
+    const qr = q(0, 'M'); qr.addData(text); qr.make();
+    const n = qr.getModuleCount(), m = 2; let d = '';
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += `M${c+m} ${r+m}h1v1h-1z`;
+    return `<svg viewBox="0 0 ${n+2*m} ${n+2*m}" shape-rendering="crispEdges" role="img" aria-label="QR code vers ${esc(text)}"><rect width="100%" height="100%" fill="#fffaf0"/><path d="${d}" fill="#1a120c"/></svg>`;
+  });
+}
+function openShare(){
+  const url = appUrl();
+  ui.modal = {type:'share'}; ui.qrError = false; render();
+  if (ui.qrSvg && ui.qrFor === url) return;
+  buildQR(url).then(svg => { ui.qrSvg = svg; ui.qrFor = url; const box = $('#qrBox'); if (box) box.innerHTML = svg; })
+    .catch(() => { ui.qrError = true; const box = $('#qrBox'); if (box) box.innerHTML = '<div class="qr-wait">QR code indisponible hors ligne.<br>Utilisez le lien ci-dessous.</div>'; });
 }
 function confirmBox(title, text, yes, fn, danger=true){ pendingConfirm = fn; ui.modal = {type:'confirm', title, text, yes, danger}; render(); }
 
@@ -1415,6 +1476,16 @@ const A = {
     else go();
   },
   rules(){ ui.modal = {type:'rules'}; render(); },
+  share(){ openShare(); },
+  async copyLink(){
+    const url = appUrl();
+    try { await navigator.clipboard.writeText(url); toast('Lien copié'); }
+    catch(e){ const i = $('#shareLink'); if (i){ i.focus(); i.select(); i.setSelectionRange(0, 999); try { document.execCommand('copy'); toast('Lien copié'); } catch(_){} } }
+  },
+  async nativeShare(){
+    try { await navigator.share({title:'Skull King · Carnet de bord', text:'Le carnet de score pour nos parties de Skull King ☠️', url:appUrl()}); }
+    catch(e){}
+  },
   closeModal(){ ui.modal = null; pendingConfirm = null; render(); },
   overlay(d, el, ev){ if (ev.target === el && ui.modal && ui.modal.type !== 'summary') A.closeModal(); },
   confirmYes(){ const fn = pendingConfirm; pendingConfirm = null; ui.modal = null; if (fn) fn(); else render(); },

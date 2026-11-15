@@ -1,6 +1,6 @@
 /* Service worker : rend l'app utilisable hors ligne.
    Changer VERSION à chaque mise à jour des fichiers. */
-const VERSION = 'skullking-v3';
+const VERSION = 'skullking-v4';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -29,7 +29,7 @@ self.addEventListener('fetch', e => {
   }
 
   // Polices Google et fichiers de l'app : cache d'abord, puis réseau.
-  const isFont = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
+  const isFont = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com' || url.hostname === 'cdnjs.cloudflare.com';
   if (isFont || url.origin === self.location.origin){
     e.respondWith(
       caches.match(req).then(hit => hit || fetch(req).then(res => {
