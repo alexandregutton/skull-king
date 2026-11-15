@@ -1,0 +1,1409 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2c1a0e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Skull King">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<title>Skull King · Carnet de bord</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sea:#06111a; --sea2:#0d2333; --sea3:#163a4f;
+  --wood:#4a2e1b; --wood2:#2c1a0e; --wood3:#1c1009;
+  --parch:#f3e7c9; --parch2:#e6d3a6; --parch3:#d4bb85; --edge:#8a6a3a;
+  --ink:#2a1c10; --ink-soft:#6b5236; --ink-faint:#9a8160;
+  --gold:#d9ad4b; --gold-hi:#f4d98c; --gold-lo:#a87a24;
+  --blood:#a5262b; --blood-hi:#c9373d;
+  --good:#2f7a4a; --bad:#a5262b;
+  --bone:#efe2c4;
+  --title:'Pirata One', 'Luminari', 'Papyrus', Georgia, serif;
+  --body:'Crimson Pro', Georgia, 'Times New Roman', serif;
+  --num:'Crimson Pro', Georgia, serif;
+  --radius:12px;
+  --shadow:0 12px 32px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; min-height:100vh; font-family:var(--body); font-size:17px; line-height:1.4; color:var(--bone);
+  background:
+    radial-gradient(1100px 520px at 50% -8%, rgba(46,104,128,.55), transparent 65%),
+    radial-gradient(800px 400px at 100% 110%, rgba(20,60,80,.5), transparent 70%),
+    linear-gradient(180deg, #0b1d29 0%, var(--sea) 70%);
+  background-color:var(--sea);
+  background-repeat:no-repeat;
+  background-size:100% 100vh;
+  overscroll-behavior-y:none;
+}
+html{background:var(--sea)}
+body::before{ /* waves texture */
+  content:""; position:fixed; inset:0; pointer-events:none; opacity:.07; z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40'%3E%3Cpath d='M0 20 Q15 8 30 20 T60 20 T90 20 T120 20' fill='none' stroke='%23e9dcb8' stroke-width='1.4'/%3E%3C/svg%3E");
+  background-size:120px 40px;
+}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.topbar,.actionbar,.chip,.pc-head,.label,.phases,.voyage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button:disabled{cursor:not-allowed}
+input{font:inherit}
+:focus-visible{outline:3px solid var(--gold-hi);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.07) 0 2px, transparent 2px 11px),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 5px),
+    linear-gradient(#56361f, var(--wood2));
+  border-bottom:3px solid var(--gold-lo);
+  box-shadow:0 4px 18px rgba(0,0,0,.5), inset 0 -1px 0 rgba(255,220,150,.15);
+}
+.topbar-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:8px 16px;padding-top:max(8px,env(safe-area-inset-top))}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{width:42px;height:42px;flex:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+.brand-t{font-family:var(--title);font-size:26px;line-height:1;color:var(--gold-hi);text-shadow:0 2px 0 #1a0f07, 0 0 12px rgba(217,173,75,.25);white-space:nowrap}
+.brand-s{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#cdb68a;opacity:.85}
+.nav{margin-left:auto;display:flex;gap:4px}
+.nav button{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;color:#e8d6ae;font-weight:600;font-size:15px}
+.nav button svg{width:18px;height:18px}
+.nav button:hover{background:rgba(255,220,150,.08)}
+.nav button[aria-current="page"]{background:rgba(217,173,75,.18);color:var(--gold-hi);box-shadow:inset 0 0 0 1px rgba(217,173,75,.45)}
+
+main{flex:1;width:100%;max-width:1180px;margin:0 auto;padding:22px 16px 120px}
+.enter{animation:enter .35s ease both}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- Typography ---------- */
+h1,h2,h3{font-family:var(--title);font-weight:400;margin:0;letter-spacing:.01em}
+h1{font-size:clamp(38px,7vw,64px);line-height:1;color:var(--gold-hi);text-shadow:0 3px 0 #1a0f07, 0 0 30px rgba(217,173,75,.25)}
+h2{font-size:28px;color:var(--gold-hi);text-shadow:0 2px 0 #120a04}
+.parch h2,.parch h3{color:var(--ink);text-shadow:none}
+h3{font-size:22px}
+.muted{opacity:.7}
+.eyebrow{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:#cdb68a}
+.parch .eyebrow{color:var(--ink-soft)}
+.sec-head{display:flex;align-items:baseline;gap:12px;margin:30px 0 12px;flex-wrap:wrap}
+.sec-head .eyebrow{margin-left:auto}
+
+/* ---------- Parchment panel ---------- */
+.parch{
+  position:relative;color:var(--ink);border-radius:var(--radius);
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.45), transparent 55%),
+    radial-gradient(ellipse at center, #f6ecd3 0%, var(--parch2) 72%, var(--parch3) 100%);
+  box-shadow:0 0 0 1px var(--edge), 0 0 0 4px rgba(42,28,16,.55), var(--shadow), inset 0 0 50px rgba(130,90,35,.28);
+}
+.parch::after{ /* paper grain */
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.35;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .32 0 0 0 0 .16 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.parch > *{position:relative;z-index:1}
+.pad{padding:20px}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 20px;border-radius:10px;font-weight:700;font-size:17px;transition:transform .08s, filter .15s, box-shadow .15s;white-space:nowrap}
+.btn svg{width:20px;height:20px;flex:none}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn-gold{
+  color:#2a1806;text-shadow:0 1px 0 rgba(255,240,200,.6);
+  background:linear-gradient(180deg,#f7dd92 0%,#e2b552 45%,#bf8a2c 100%);
+  box-shadow:0 0 0 1px #6e4a14, inset 0 1px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(0,0,0,.18), 0 4px 12px rgba(0,0,0,.4);
+}
+.btn-gold:hover:not(:disabled){filter:brightness(1.07)}
+.btn-gold:disabled{filter:grayscale(.75) brightness(.75);opacity:.7}
+.btn-blood{color:#fff3e0;background:linear-gradient(180deg,#c9373d,#8b1c21);box-shadow:0 0 0 1px #4d0c10, inset 0 1px 0 rgba(255,255,255,.3), 0 4px 12px rgba(0,0,0,.35)}
+.btn-ghost{color:var(--bone);box-shadow:inset 0 0 0 1.5px rgba(239,226,196,.35)}
+.btn-ghost:hover{background:rgba(239,226,196,.08)}
+.parch .btn-ghost{color:var(--ink);box-shadow:inset 0 0 0 1.5px rgba(42,28,16,.35)}
+.parch .btn-ghost:hover{background:rgba(42,28,16,.06)}
+.btn-wood{color:var(--gold-hi);background:linear-gradient(#5a3a22,#33200f);box-shadow:0 0 0 1px #1c1009, inset 0 1px 0 rgba(255,220,150,.2)}
+.btn-sm{min-height:36px;padding:6px 12px;font-size:15px;border-radius:8px}
+.icon-btn{width:38px;height:38px;border-radius:8px;display:inline-grid;place-items:center;color:var(--ink-soft)}
+.icon-btn:hover:not(:disabled){background:rgba(42,28,16,.08);color:var(--ink)}
+.icon-btn:disabled{opacity:.3}
+.icon-btn svg{width:20px;height:20px}
+
+/* ---------- Home ---------- */
+.hero{display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center;padding:18px 4px 6px}
+.hero-emblem{width:150px;height:150px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.6))}
+.hero p{font-size:19px;max-width:560px;margin:10px 0 18px;color:#e2d3b0}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+.home-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:22px;margin-top:26px}
+.resume-card{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.resume-card .rc-info{flex:1;min-width:220px}
+.resume-card .rc-title{font-family:var(--title);font-size:26px}
+.mini-rank{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.mini-rank span{display:inline-flex;align-items:center;gap:6px;background:rgba(42,28,16,.07);border-radius:999px;padding:3px 10px 3px 4px;font-weight:600}
+.hist-list{list-style:none;margin:0;padding:0}
+.hist-item{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px dashed rgba(42,28,16,.25)}
+.hist-item:last-child{border-bottom:0}
+.hist-main{flex:1;min-width:0;text-align:left;border-radius:8px;padding:4px 6px;margin:-4px -6px}
+.hist-main:hover{background:rgba(42,28,16,.06)}
+.hist-date{font-size:14px;color:var(--ink-soft)}
+.hist-win{font-weight:700;font-size:18px;display:flex;align-items:center;gap:6px}
+.hist-win svg{width:18px;height:18px;color:var(--gold-lo)}
+.hist-others{font-size:14px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fame{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.fame li{display:flex;align-items:center;gap:10px;font-size:18px}
+.fame .bar{flex:1;height:8px;border-radius:4px;background:rgba(42,28,16,.12);overflow:hidden}
+.fame .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold-lo),var(--gold))}
+.fame b{font-family:var(--title);font-size:22px;min-width:28px;text-align:right}
+.empty{padding:26px 10px;text-align:center;color:var(--ink-soft)}
+.empty svg{width:46px;height:46px;opacity:.5;display:block;margin:0 auto 8px}
+.foot-tools{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:34px}
+
+/* ---------- Setup ---------- */
+.setup-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:start}
+.crew{display:grid;gap:8px}
+.crew-row{display:flex;align-items:center;gap:8px;padding:6px;border-radius:10px;background:rgba(255,250,235,.35);box-shadow:inset 0 0 0 1px rgba(42,28,16,.12)}
+.swatch{width:40px;height:40px;border-radius:50%;flex:none;background:var(--pc);box-shadow:0 0 0 2px var(--parch),0 0 0 3.5px var(--ink-soft);position:relative}
+.swatch::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.45),transparent 50%)}
+.crew-row input[type=text]{flex:1;min-width:0;height:44px;border-radius:8px;border:1px solid rgba(42,28,16,.3);background:rgba(255,253,245,.8);padding:0 12px;color:var(--ink);font-size:18px;font-weight:600}
+.crew-row input::placeholder{color:var(--ink-faint);font-weight:400;font-style:italic}
+.crew-row input:focus{outline:none;border-color:var(--gold-lo);box-shadow:0 0 0 3px rgba(217,173,75,.35)}
+.dealer-btn{height:36px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--ink-faint);display:inline-flex;align-items:center;gap:4px;box-shadow:inset 0 0 0 1px rgba(42,28,16,.2)}
+.dealer-btn svg{width:16px;height:16px}
+.dealer-btn[aria-pressed="true"]{color:#2a1806;background:linear-gradient(#f2d27f,#c9952f);box-shadow:0 0 0 1px #6e4a14}
+.add-row{margin-top:10px;width:100%;border-radius:10px;min-height:48px;border:2px dashed rgba(42,28,16,.3);color:var(--ink-soft);font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px}
+.add-row:hover:not(:disabled){border-color:var(--gold-lo);color:var(--ink);background:rgba(217,173,75,.08)}
+.add-row:disabled{opacity:.4}
+.add-row svg{width:20px;height:20px}
+.opt-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt-card{text-align:left;padding:14px;border-radius:10px;background:rgba(255,250,235,.4);box-shadow:inset 0 0 0 1.5px rgba(42,28,16,.18);color:var(--ink);transition:box-shadow .15s, background .15s}
+.opt-card:hover{background:rgba(255,250,235,.7)}
+.opt-card[aria-pressed="true"]{background:rgba(255,246,220,.95);box-shadow:inset 0 0 0 2.5px var(--gold-lo), 0 4px 10px rgba(110,74,20,.25)}
+.opt-card .oc-t{font-family:var(--title);font-size:22px;display:flex;align-items:center;gap:8px}
+.opt-card .oc-t svg{width:22px;height:22px;color:var(--gold-lo)}
+.opt-card .oc-d{font-size:15px;color:var(--ink-soft);margin-top:2px}
+.formats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.formats .opt-card{padding:10px 12px}
+.formats .oc-t{font-size:19px}
+.seq{font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;margin-top:3px;letter-spacing:.02em}
+.toggle{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 4px;border-bottom:1px dashed rgba(42,28,16,.2);color:var(--ink)}
+.toggle:last-child{border-bottom:0}
+.toggle .tg-txt{flex:1}
+.toggle .tg-t{font-weight:700;font-size:17px}
+.toggle .tg-d{font-size:14px;color:var(--ink-soft)}
+.switch{width:50px;height:28px;border-radius:999px;background:rgba(42,28,16,.25);position:relative;flex:none;transition:background .2s;box-shadow:inset 0 1px 3px rgba(0,0,0,.3)}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fbf4e2;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}
+[aria-checked="true"] .switch{background:var(--good)}
+[aria-checked="true"] .switch::after{transform:translateX(22px)}
+.note{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:10px 12px;border-radius:8px;background:rgba(165,38,43,.09);color:#6e1a1d;font-size:15px}
+.note svg{width:20px;height:20px;flex:none;margin-top:1px}
+.note.info{background:rgba(47,122,74,.1);color:#1f5233}
+.stack{display:grid;gap:22px}
+
+/* ---------- Action bar ---------- */
+.actionbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:linear-gradient(180deg,rgba(6,17,26,.6),rgba(6,17,26,.96) 30%);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid rgba(217,173,75,.35);padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.actionbar-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.ab-status{flex:1;min-width:0;font-size:16px;color:#e4d3ae;line-height:1.25}
+.ab-status b{color:var(--gold-hi);font-variant-numeric:tabular-nums}
+.ab-status .warn{color:#f19a8e}
+.ab-status .ok{color:#9fd8a8}
+.ab-btns{display:flex;gap:8px}
+
+/* ---------- Play ---------- */
+.round-head{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:14px}
+.round-title{display:flex;align-items:baseline;gap:12px}
+.round-title h1{font-size:clamp(40px,6vw,56px)}
+.round-of{font-family:var(--title);font-size:24px;color:#cdb68a}
+.round-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:rgba(239,226,196,.1);box-shadow:inset 0 0 0 1px rgba(239,226,196,.22);font-size:15px;color:#ead9b4}
+.tag svg{width:16px;height:16px;color:var(--gold)}
+.tag b{color:var(--gold-hi)}
+.voyage{margin-left:auto;display:flex;align-items:center;gap:0;padding:6px 4px}
+.voyage .leg{width:18px;height:2px;background:rgba(239,226,196,.25)}
+.voyage .leg.done{background:var(--gold)}
+.vdot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;color:#cdb68a;box-shadow:inset 0 0 0 1.5px rgba(239,226,196,.3);background:rgba(6,17,26,.6);font-variant-numeric:tabular-nums}
+.vdot.done{background:linear-gradient(#f2d27f,#b8862b);color:#2a1806;box-shadow:0 0 0 1px #6e4a14}
+button.vdot.done:hover{filter:brightness(1.1)}
+.vdot.cur{background:var(--blood);color:#fff;box-shadow:0 0 0 3px rgba(201,55,61,.35),0 0 14px rgba(201,55,61,.6);transform:scale(1.12)}
+.phases{display:flex;gap:6px;margin:6px 0 18px;padding:5px;border-radius:12px;background:rgba(0,0,0,.25);box-shadow:inset 0 0 0 1px rgba(239,226,196,.12);width:max-content;max-width:100%}
+.phase{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:9px;font-weight:700;color:#bba57c}
+.phase .num{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:14px;box-shadow:inset 0 0 0 1.5px currentColor}
+.phase[aria-current="step"]{background:linear-gradient(#5a3a22,#33200f);color:var(--gold-hi);box-shadow:0 0 0 1px #6e4a14}
+.phase[aria-current="step"] .num{background:var(--gold);color:#2a1806;box-shadow:none}
+.phase.donep{color:#9fd8a8}
+.edit-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(217,173,75,.14);box-shadow:inset 0 0 0 1px rgba(217,173,75,.5);margin-bottom:16px;color:var(--gold-hi)}
+.edit-banner svg{width:20px;height:20px}
+.seas{font-size:15px;color:#cdb68a;margin:-8px 0 16px;display:flex;align-items:center;gap:8px}
+.seas svg{width:18px;height:18px;color:var(--gold)}
+
+.players{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
+.pcard{padding:14px 16px 14px 22px;overflow:hidden}
+.pcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:linear-gradient(180deg,var(--pc),color-mix(in srgb,var(--pc) 60%,#000));z-index:2;border-radius:var(--radius) 0 0 var(--radius)}
+.pc-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.avatar{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;font-family:var(--title);font-size:22px;color:#fff;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--pc) 70%,#fff),var(--pc) 55%,color-mix(in srgb,var(--pc) 70%,#000));box-shadow:0 0 0 2px var(--gold),0 2px 6px rgba(0,0,0,.4);text-shadow:0 1px 2px rgba(0,0,0,.5);position:relative}
+.avatar.sm{width:30px;height:30px;font-size:16px;box-shadow:0 0 0 1.5px var(--gold)}
+.avatar .crown{position:absolute;top:-13px;left:50%;transform:translateX(-50%);width:22px;height:16px;color:var(--gold)}
+.pc-name{flex:1;min-width:0}
+.pc-name .nm{font-weight:700;font-size:20px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-name .sub{font-size:14px;color:var(--ink-soft);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:0 7px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:rgba(42,28,16,.1);color:var(--ink-soft)}
+.badge svg{width:12px;height:12px}
+.badge.lead{background:var(--blood);color:#fff}
+.pc-total{text-align:right}
+.pc-total .v{font-family:var(--title);font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.pc-total .l{font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.1em}
+.label{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:8px 0 6px;display:flex;align-items:center;gap:8px}
+.label .grow{flex:1;height:1px;background:rgba(42,28,16,.18)}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+.chip{height:44px;border-radius:50%;aspect-ratio:1;margin:0 auto;width:44px;font-weight:700;font-size:19px;color:var(--ink);font-variant-numeric:tabular-nums;
+  background:radial-gradient(circle at 35% 30%,#fffaf0,#e8d6ac 70%);box-shadow:inset 0 0 0 1.5px rgba(138,106,58,.55),0 1px 2px rgba(0,0,0,.15);transition:transform .1s, box-shadow .15s}
+.chip:hover{transform:translateY(-1px);box-shadow:inset 0 0 0 2px var(--gold-lo),0 3px 6px rgba(0,0,0,.18)}
+.chip.on{color:#2a1806;background:radial-gradient(circle at 35% 30%,#fff1bf,#e7b94f 55%,#a8761f);box-shadow:0 0 0 2px #6e4a14,inset 0 -2px 0 rgba(0,0,0,.2),0 3px 8px rgba(110,74,20,.45);transform:scale(1.08)}
+.chip.zero.on{background:radial-gradient(circle at 35% 30%,#7e8a92,#3a444b 60%,#1e2529);color:#f3e7c9;box-shadow:0 0 0 2px #10161a,0 3px 8px rgba(0,0,0,.4)}
+.chip:disabled{opacity:.3;transform:none}
+.seg{display:inline-flex;padding:3px;border-radius:10px;background:rgba(42,28,16,.1);gap:2px}
+.seg button{padding:6px 12px;border-radius:8px;font-weight:700;font-size:15px;color:var(--ink-soft);display:inline-flex;align-items:center;gap:6px;min-height:34px}
+.seg button svg{width:16px;height:16px}
+.seg button[aria-pressed="true"]{background:#fff8e6;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.2),inset 0 0 0 1px rgba(110,74,20,.4)}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bidline{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;background:rgba(42,28,16,.06);margin-bottom:4px}
+.bidline .bl-l{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.bidline .bl-v{font-family:var(--title);font-size:26px;min-width:24px;text-align:center;line-height:1}
+.bidline .harry{font-size:14px;color:var(--blood);font-weight:700}
+.stepper{display:inline-flex;align-items:center;gap:2px}
+.stepper button{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:var(--ink-soft);box-shadow:inset 0 0 0 1px rgba(42,28,16,.25)}
+.stepper button:hover:not(:disabled){background:rgba(42,28,16,.08);color:var(--ink)}
+.stepper button:disabled{opacity:.25}
+.stepper button svg{width:14px;height:14px}
+.stepper output{min-width:26px;text-align:center;font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
+.preview{margin-left:auto;text-align:right;min-width:70px}
+.preview .pv{font-family:var(--title);font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.preview .pl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.pos{color:var(--good)} .neg{color:var(--bad)} .nul{color:var(--ink-faint)}
+.pop{animation:pop .3s ease}
+@keyframes pop{0%{transform:scale(.7);opacity:.3}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+.bonus-toggle{margin-top:12px;width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(42,28,16,.07);font-weight:700;color:var(--ink)}
+.bonus-toggle:hover{background:rgba(42,28,16,.11)}
+.bonus-toggle svg{width:20px;height:20px;color:var(--gold-lo)}
+.bonus-toggle .bt-v{margin-left:auto;font-family:var(--title);font-size:22px;font-weight:400}
+.bonus-toggle .chev{transition:transform .2s;color:var(--ink-soft)}
+.bonus-toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.bonus-toggle .lost{font-size:13px;color:var(--bad);font-weight:700}
+.bonus-panel{display:grid;gap:2px;margin-top:6px;padding:4px 2px}
+.bitem{display:flex;align-items:center;gap:10px;padding:6px 4px;border-bottom:1px dashed rgba(42,28,16,.16)}
+.bitem:last-child{border-bottom:0}
+.bicon{width:34px;height:34px;flex:none;display:grid;place-items:center}
+.bicon svg{width:30px;height:30px}
+.btxt{flex:1;min-width:0;line-height:1.15}
+.btxt .bt{font-weight:700;font-size:16px}
+.btxt .bd{font-size:13px;color:var(--ink-soft)}
+.bpts{font-size:13px;font-weight:700;color:var(--gold-lo);background:rgba(217,173,75,.18);padding:1px 7px;border-radius:999px;margin-left:4px;white-space:nowrap}
+.mini-switch{width:44px;height:26px;border-radius:999px;background:rgba(42,28,16,.22);position:relative;flex:none;transition:background .2s;box-shadow:inset 0 1px 3px rgba(0,0,0,.3)}
+.mini-switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fbf4e2;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}
+.mini-switch[aria-checked="true"]{background:var(--gold-lo)}
+.mini-switch[aria-checked="true"]::after{transform:translateX(18px)}
+.verdict{margin-top:10px;font-size:15px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;min-height:22px}
+.verdict svg{width:18px;height:18px;flex:none}
+.verdict.good{color:var(--good)} .verdict.bad{color:var(--bad)}
+
+/* ---------- Board ---------- */
+.board-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--radius)}
+table.board{border-collapse:separate;border-spacing:0;width:100%;min-width:max-content;font-variant-numeric:tabular-nums}
+.board th,.board td{padding:8px 12px;text-align:center;border-bottom:1px solid rgba(42,28,16,.15)}
+.board thead th{position:sticky;top:0;font-weight:700;font-size:15px;vertical-align:bottom;background:rgba(230,211,166,.6)}
+.board .ph{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:84px}
+.board .ph .nm{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board th.rcol,.board td.rcol{position:sticky;left:0;z-index:1;text-align:left;background:#ead9b0;box-shadow:1px 0 0 rgba(42,28,16,.15)}
+.board td.rcol{font-family:var(--title);font-size:20px;white-space:nowrap}
+.board td.rcol small{font-family:var(--body);font-size:13px;color:var(--ink-soft);margin-left:6px}
+.board tbody tr.click{cursor:pointer}
+.board tbody tr.click:hover td{background:rgba(217,173,75,.14)}
+.board tbody tr.click:hover td.rcol{background:#e8cf93}
+.board tbody tr.cur td{background:rgba(165,38,43,.07)}
+.cell-pts{font-weight:700;font-size:19px;line-height:1.1}
+.cell-sub{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+.cell-sub .ex{color:var(--good);font-weight:700}
+.cell-sub .mi{color:var(--bad);font-weight:700}
+.board tfoot td{font-family:var(--title);font-size:26px;border-bottom:0;background:rgba(42,28,16,.08)}
+.board tfoot td.rcol{font-size:20px}
+.board .lead-cell{color:var(--blood)}
+.dash{color:var(--ink-faint)}
+.rank-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-bottom:22px}
+.rank-card{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.rank-card .rk{font-family:var(--title);font-size:30px;width:34px;color:var(--ink-soft);text-align:center}
+.rank-card.first .rk{color:var(--blood)}
+.rank-card .rn{flex:1;min-width:0;font-weight:700;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-card .rv{font-family:var(--title);font-size:28px;font-variant-numeric:tabular-nums}
+.chart-box{padding:16px 16px 8px;margin-top:22px}
+.chart-box svg{width:100%;height:auto;display:block}
+.board-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.hint{font-size:14px;color:#cdb68a;margin-top:10px;display:flex;align-items:center;gap:6px}
+.hint svg{width:16px;height:16px}
+
+/* ---------- End ---------- */
+.end-hero{text-align:center;padding:10px 0 0}
+.end-hero .eyebrow{color:var(--gold)}
+.end-hero h1{margin-top:6px}
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:12px;margin:34px auto 10px;max-width:640px}
+.pod{flex:1;max-width:200px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.pod .avatar{width:64px;height:64px;font-size:32px}
+.pod .avatar .crown{width:34px;height:24px;top:-22px}
+.pod .pn{font-weight:700;font-size:19px;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .pv{font-family:var(--title);font-size:28px;color:var(--gold-hi)}
+.pod .step{width:100%;border-radius:10px 10px 0 0;display:grid;place-items:start center;padding-top:10px;font-family:var(--title);font-size:42px;color:#2a1806;
+  background:linear-gradient(180deg,#f2d27f,#b8862b);box-shadow:0 0 0 1px #6e4a14, inset 0 2px 0 rgba(255,255,255,.5)}
+.pod.p2 .step{background:linear-gradient(180deg,#e5e2da,#9b968a);height:110px}
+.pod.p1 .step{height:150px}
+.pod.p3 .step{background:linear-gradient(180deg,#e2a873,#9a5a2a);height:80px}
+.awards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:26px}
+.award{padding:14px 16px;display:flex;gap:12px;align-items:center}
+.award svg{width:36px;height:36px;color:var(--gold-lo);flex:none}
+.award .at{font-family:var(--title);font-size:21px;line-height:1.1}
+.award .ad{font-size:15px;color:var(--ink-soft)}
+.end-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.coins{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.coins i{position:absolute;top:-30px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff1bf,#e7b94f 55%,#8a5e14);box-shadow:0 0 0 1px #6e4a14;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotateY(720deg)}}
+
+/* ---------- Modal ---------- */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(3,8,12,.66);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:grid;place-items:center;padding:16px;animation:fade .2s ease}
+@keyframes fade{from{opacity:0}}
+.dialog{width:100%;max-width:520px;max-height:calc(100vh - 32px);overflow:auto;padding:24px;animation:rise .25s ease}
+.dialog.wide{max-width:720px}
+@keyframes rise{from{transform:translateY(14px) scale(.98);opacity:0}}
+.dialog h2{margin-bottom:6px}
+.dialog .dlg-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px}
+.sum-list{list-style:none;margin:14px 0 0;padding:0}
+.sum-list li{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px dashed rgba(42,28,16,.2)}
+.sum-list .sr-rk{font-family:var(--title);font-size:22px;width:24px;text-align:center;color:var(--ink-soft)}
+.sum-list .sr-nm{flex:1;font-weight:700;font-size:18px;min-width:5em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sum-list .sr-mv{font-size:13px;font-weight:700;width:30px;text-align:center;flex:none}
+.sum-list .sr-rd{font-weight:700;min-width:44px;text-align:right;font-variant-numeric:tabular-nums;flex:none}
+.sum-list .sr-tt{font-size:22px;min-width:48px;text-align:right;font-variant-numeric:tabular-nums;flex:none}
+@media (max-width:420px){ .sum-list .avatar{display:none} .dialog{padding:18px} }
+.rules h3{margin:18px 0 6px;font-size:22px}
+.rules table{width:100%;border-collapse:collapse;font-size:16px}
+.rules td{padding:6px 4px;border-bottom:1px dashed rgba(42,28,16,.2);vertical-align:top}
+.rules td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+.rules p{margin:6px 0;font-size:16px}
+
+/* ---------- Toast ---------- */
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);z-index:60;opacity:0;pointer-events:none;transition:all .25s ease;background:linear-gradient(#5a3a22,#33200f);color:var(--gold-hi);padding:10px 18px;border-radius:999px;box-shadow:0 0 0 1px #6e4a14,0 8px 24px rgba(0,0,0,.5);font-weight:700;max-width:calc(100vw - 32px);text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%)}
+.save-warn{max-width:1180px;margin:10px auto 0;padding:8px 14px;border-radius:8px;background:rgba(165,38,43,.85);color:#fff;font-size:15px}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px){
+  .home-grid,.setup-grid{grid-template-columns:1fr}
+  .voyage{margin-left:0;width:100%;overflow-x:auto;padding:6px 2px}
+}
+@media (max-width: 640px){
+  body{font-size:16px}
+  .brand-s{display:none}
+  .brand-t{font-size:22px}
+  .nav button span{display:none}
+  .nav button{padding:8px 10px}
+  .hero{grid-template-columns:1fr;text-align:center;justify-items:center}
+  .hero-emblem{width:110px;height:110px}
+  .hero-actions{justify-content:center}
+  .players{grid-template-columns:1fr}
+  .opt-cards{grid-template-columns:1fr}
+  .actionbar-in{flex-wrap:wrap}
+  .ab-status{flex-basis:100%}
+  .ab-btns{width:100%}
+  .ab-btns .btn{flex:1}
+  .vdot{width:26px;height:26px;font-size:12px}
+  .voyage .leg{width:8px}
+  .podium{gap:6px}
+  .pod .avatar{width:50px;height:50px;font-size:26px}
+  .pod .pn{font-size:16px}
+  .pod .pv{font-size:22px}
+  .crew-row .move{display:none}
+  #toast{top:calc(env(safe-area-inset-top) + 74px);bottom:auto;transform:translateX(-50%) translateY(-20px)}
+  #toast.show{transform:translateX(-50%)}
+  main{padding:16px 12px 150px}
+  .pcard{padding:12px 12px 12px 18px}
+  .chips{grid-template-columns:repeat(6,1fr);gap:6px}
+  .chip{width:100%;max-width:48px;height:auto}
+  .players{gap:12px}
+  .round-head{gap:10px}
+  .round-meta .tag{font-size:14px;padding:3px 10px}
+  .dealer-btn span{display:none}
+}
+.pv,.bl-v,.pc-total .v,.bt-v,.rv,.sr-tt,.board tfoot td:not(.rcol),.pod .pv,.fame b,.round-title .n,h1 .n,.hist-win .sc,.rank-card .rk,.sr-rk,.pod .step,.board td.rcol{font-family:var(--num)!important;font-weight:700!important;letter-spacing:-.01em}
+.round-title .n,h1 .n{font-size:.85em;color:var(--gold-hi)}
+@media (hover:none){
+  .chip:hover{transform:none;box-shadow:inset 0 0 0 1.5px rgba(138,106,58,.55),0 1px 2px rgba(0,0,0,.15)}
+  .chip.on:hover{transform:scale(1.08);box-shadow:0 0 0 2px #6e4a14,inset 0 -2px 0 rgba(0,0,0,.2),0 3px 8px rgba(110,74,20,.45)}
+  .chip:active{transform:scale(.94)}
+}
+.install{display:flex;gap:12px;align-items:center;margin-top:22px;padding:14px 16px}
+.install svg{width:28px;height:28px;flex:none;color:var(--gold-lo)}
+.install .share{display:inline-block;width:18px;height:18px;vertical-align:-3px}
+@media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+(() => {
+'use strict';
+
+/* =========================================================
+   Données de référence
+   ========================================================= */
+const STORE = 'skullking-carnet-v1';
+const COLORS = ['#b3262d','#c48a1c','#1f7a6c','#2f5597','#7a3f99','#4c7a2a','#c4581f','#3b3b3b'];
+const PIRATE_NAMES = ['Barbe-Grise','Anne la Rouge','Jack Sabre','Morgane','Le Borgne','Calico Rose','Ned Tonnerre','Marie Corsaire','Bosco','Jambe-de-Bois'];
+const FORMATS = [
+  {id:'classic', name:'Classique', desc:'10 manches, de 1 à 10 cartes', rounds:[1,2,3,4,5,6,7,8,9,10]},
+  {id:'even', name:'Pas d’impair', desc:'Deux manches de 2, 4, 6, 8, 10', rounds:[2,2,4,4,6,6,8,8,10,10]},
+  {id:'battle', name:'Prêt au combat', desc:'5 manches : 6 à 10 cartes', rounds:[6,7,8,9,10]},
+  {id:'blitz', name:'Attaque éclair', desc:'5 manches de 5 cartes', rounds:[5,5,5,5,5]},
+  {id:'barrage', name:'Tir de barrage', desc:'10 manches de 10 cartes', rounds:[10,10,10,10,10,10,10,10,10,10]},
+  {id:'whirl', name:'Tourbillon', desc:'Deux manches de 9, 7, 5, 3, 1', rounds:[9,9,7,7,5,5,3,3,1,1]},
+  {id:'nap', name:'L’heure du dodo', desc:'Une manche à 1 carte', rounds:[1]},
+];
+const BONUS = [
+  {k:'b14',      t:'14 de couleur',      d:'jaune, violet ou vert, en fin de manche', pts:10, max:3, cap:3, type:'count', icon:'b14'},
+  {k:'black',    t:'14 noir',            d:'Drapeau pirate',                          pts:20, type:'flag', unique:true, icon:'b14k'},
+  {k:'mermaids', t:'Sirène capturée',    d:'par un de vos pirates',                   pts:20, max:2, cap:2, type:'count', icon:'mermaid'},
+  {k:'pirates',  t:'Pirate capturé',     d:'par votre Skull King',                    pts:30, max:6, cap:6, type:'count', icon:'swords'},
+  {k:'skull',    t:'Skull King capturé', d:'par votre sirène',                        pts:40, type:'flag', unique:true, icon:'crown'},
+  {k:'loot',     t:'Alliance Butin',     d:'si vous et votre allié réussissez',       pts:20, max:2, type:'count', icon:'chest', opt:'loot'},
+];
+
+/* =========================================================
+   Icônes (SVG originaux)
+   ========================================================= */
+const I = {
+  emblem: `<svg viewBox="0 0 100 100" aria-hidden="true">
+    <g stroke="#2a1806" stroke-width="13" stroke-linecap="round"><line x1="16" y1="40" x2="84" y2="94"/><line x1="84" y1="40" x2="16" y2="94"/></g>
+    <g stroke="#e9dcb8" stroke-width="8" stroke-linecap="round"><line x1="16" y1="40" x2="84" y2="94"/><line x1="84" y1="40" x2="16" y2="94"/></g>
+    <g fill="#e9dcb8" stroke="#2a1806" stroke-width="2"><circle cx="11" cy="38" r="6"/><circle cx="18" cy="33" r="6"/><circle cx="89" cy="38" r="6"/><circle cx="82" cy="33" r="6"/><circle cx="11" cy="94" r="6"/><circle cx="17" cy="99" r="5"/><circle cx="89" cy="94" r="6"/><circle cx="83" cy="99" r="5"/></g>
+    <path d="M28 27 L34 9 L42 21 L50 5 L58 21 L66 9 L72 27 Z" fill="#e7b94f" stroke="#5a3a0e" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="50" cy="16" r="2.6" fill="#a5262b"/><circle cx="35" cy="20" r="1.8" fill="#2f5597"/><circle cx="65" cy="20" r="1.8" fill="#1f7a6c"/>
+    <path d="M50 24c-17 0-27 11-27 25 0 9 4 15 10 19v8c0 3 2 5 5 5h24c3 0 5-2 5-5v-8c6-4 10-10 10-19 0-14-10-25-27-25z" fill="#efe2c4" stroke="#2a1806" stroke-width="3"/>
+    <path d="M33 50c0-5 4-8 8-8s7 3 7 7-3 8-8 8-7-3-7-7zM52 49c0-4 3-7 7-7s8 3 8 8-3 7-7 7-8-4-8-8z" fill="#1a120c"/>
+    <circle cx="41" cy="49" r="2" fill="#a5262b"/><circle cx="59" cy="49" r="2" fill="#a5262b"/>
+    <path d="M50 58l-4 8h8z" fill="#1a120c"/>
+    <g stroke="#2a1806" stroke-width="2.4"><line x1="42" y1="72" x2="42" y2="80"/><line x1="50" y1="72" x2="50" y2="80"/><line x1="58" y1="72" x2="58" y2="80"/></g>
+  </svg>`,
+  home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v15"/><circle cx="12" cy="4.5" r="2"/><path d="M5 12a7 7 0 0 0 14 0"/><path d="M3 12h4M17 12h4"/><path d="M9 8h6"/></svg>`,
+  anchor: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v14"/><path d="M5 13a7 7 0 0 0 14 0"/><path d="M8 10h8"/></svg>`,
+  wheel: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.6"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>`,
+  board: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11a3 3 0 0 1 3 3v14H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M9 7h6M9 10h4"/></svg>`,
+  book: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5c3-1 6-1 9 1 3-2 6-2 9-1v14c-3-1-6-1-9 1-3-2-6-2-9-1z"/><path d="M12 6v14"/></svg>`,
+  plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
+  minus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>`,
+  up: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>`,
+  down: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
+  right: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`,
+  left: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>`,
+  x: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
+  edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>`,
+  warn: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg>`,
+  info: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></svg>`,
+  crownS: `<svg viewBox="0 0 24 18" fill="currentColor" stroke="#5a3a0e" stroke-width="1.2" stroke-linejoin="round"><path d="M2 16L3 4l5 5 4-8 4 8 5-5 1 12z"/></svg>`,
+  crown: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 18L4 7l5 4 3-6 3 6 5-4 1 11z"/><path d="M4 21h16"/></svg>`,
+  coins: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v4c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 14v3c0 1.7 2.7 3 6 3s6-1.3 6-3v-4c0-1.7-2.7-3-6-3"/></svg>`,
+  target: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>`,
+  storm: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16a4 4 0 0 1 0-8 6 6 0 0 1 11.3-1.5A4.5 4.5 0 0 1 18 16"/><path d="M12 13l-2 4h4l-2 4"/></svg>`,
+  wave: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 10c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>`,
+  ship: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18l-3 4H6z"/><path d="M12 3v14"/><path d="M12 4l7 10h-7"/><path d="M12 6L6 14h6"/></svg>`,
+  skullS: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3c-4.5 0-8 3-8 7.5 0 2.6 1.3 4.4 3 5.4V19a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-3.1c1.7-1 3-2.8 3-5.4C20 6 16.5 3 12 3z"/><circle cx="9" cy="11" r="1.6" fill="currentColor"/><circle cx="15" cy="11" r="1.6" fill="currentColor"/><path d="M10 20v-3M14 20v-3"/></svg>`,
+  download: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>`,
+  upload: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M4 21h16"/></svg>`,
+  share: `<svg class="share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>`,
+  phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>`,
+  flag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg>`,
+  /* icônes des bonus */
+  b14: `<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="url(#gSuits)" stroke="#2a1c10" stroke-width="1.5"/><circle cx="16" cy="16" r="10" fill="#f6ecd3"/><text x="16" y="20.5" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="12" fill="#2a1c10">14</text></svg>`,
+  b14k: `<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#1e1e1e" stroke="#d9ad4b" stroke-width="1.5"/><text x="16" y="20.5" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="12" fill="#f4d98c">14</text></svg>`,
+  mermaid: `<svg viewBox="0 0 32 32" fill="none" stroke="#1f7a6c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="7" r="3.5"/><path d="M16 11c-3 3-3 8 0 11 2 2 1 4-1 6"/><path d="M15 28l-4 1M15 28l3 2"/><path d="M13 14l-4 3M19 14l4 3"/></svg>`,
+  swords: `<svg viewBox="0 0 32 32" fill="none" stroke="#2a1c10" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l16 16M26 6L10 22"/><path d="M19 25l6-6M7 19l6 6"/><path d="M23 23l3 3M9 23l-3 3"/></svg>`,
+  crownB: `<svg viewBox="0 0 32 32"><path d="M5 24L6 10l6 5 4-9 4 9 6-5 1 14z" fill="#e7b94f" stroke="#6e4a14" stroke-width="1.6" stroke-linejoin="round"/><circle cx="16" cy="18" r="2" fill="#a5262b"/></svg>`,
+  chest: `<svg viewBox="0 0 32 32"><path d="M5 14h22v12H5z" fill="#8a5a2b" stroke="#2a1c10" stroke-width="1.6"/><path d="M5 14c0-5 4-8 11-8s11 3 11 8z" fill="#a46b33" stroke="#2a1c10" stroke-width="1.6"/><path d="M5 14h22" stroke="#e7b94f" stroke-width="2"/><rect x="14" y="14" width="4" height="5" fill="#e7b94f" stroke="#2a1c10" stroke-width="1"/></svg>`,
+  dice: `<svg viewBox="0 0 32 32"><rect x="5" y="5" width="22" height="22" rx="5" fill="#f6ecd3" stroke="#2a1c10" stroke-width="1.6"/><g fill="#a5262b"><circle cx="11" cy="11" r="2"/><circle cx="21" cy="21" r="2"/><circle cx="16" cy="16" r="2"/><circle cx="21" cy="11" r="2"/><circle cx="11" cy="21" r="2"/></g></svg>`,
+  giant: `<svg viewBox="0 0 32 32" fill="none" stroke="#2a1c10" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12l-4 4 4 4M22 12l4 4-4 4"/><path d="M16 6v20"/></svg>`,
+  cannon: `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="7"/></svg>`,
+  grape: `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="7" cy="8" r="2.5"/><circle cx="13" cy="6" r="2.5"/><circle cx="17" cy="11" r="2.5"/><circle cx="10" cy="13" r="2.5"/><circle cx="15" cy="17" r="2.5"/><circle cx="8" cy="18" r="2.5"/></svg>`,
+};
+I.home = I.anchor;
+const SVG_DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gSuits" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e2b33c"/><stop offset=".33" stop-color="#e2b33c"/><stop offset=".33" stop-color="#7a3f99"/><stop offset=".66" stop-color="#7a3f99"/><stop offset=".66" stop-color="#3f8a3c"/><stop offset="1" stop-color="#3f8a3c"/></linearGradient></defs></svg>`;
+
+/* =========================================================
+   Utilitaires
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
+const clone = o => JSON.parse(JSON.stringify(o));
+const fmt = n => n > 0 ? '+' + n : n < 0 ? '−' + Math.abs(n) : '0';
+const fmtTotal = n => n < 0 ? '−' + Math.abs(n) : String(n);
+const cls = n => n > 0 ? 'pos' : n < 0 ? 'neg' : 'nul';
+const initial = name => (name || '?').trim().charAt(0).toUpperCase() || '?';
+const dateFr = ts => new Date(ts).toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'long', year:'numeric'});
+const timeFr = ts => new Date(ts).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+const plural = (n, s, p) => n + ' ' + (Math.abs(n) > 1 ? (p || s + 's') : s);
+
+/* =========================================================
+   Stockage
+   ========================================================= */
+function load(){
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE));
+    if (d && typeof d === 'object') return {current: d.current || null, history: Array.isArray(d.history) ? d.history : [], prefs: d.prefs || {}};
+  } catch(e) {}
+  return {current:null, history:[], prefs:{}};
+}
+function save(){
+  try { localStorage.setItem(STORE, JSON.stringify(db)); ui.saveFailed = false; }
+  catch(e){ ui.saveFailed = true; }
+}
+
+let db = load();
+let ui = {view: db.current ? 'play' : 'home', open:{}, edit:null, draft:null, modal:null, boardId:null, endId:null, setup:null, lastView:null, flash:{}};
+let pendingConfirm = null;
+
+/* =========================================================
+   Règles de calcul
+   ========================================================= */
+function deckSize(s){ return 70 + (s.beasts ? 2 : 0) + (s.loot ? 2 : 0); }
+function capCards(c, n, s){ const hands = n === 2 ? 3 : n; return Math.min(c, Math.floor(deckSize(s) / hands)); }
+function newEntry(){ return {bid:null, tricks:null, b14:0, black:false, mermaids:0, pirates:0, skull:false, loot:0, wager:0, harry:0, shot:'grape'}; }
+
+function bonusRaw(e, s){
+  let b = 10*(e.b14||0) + (e.black ? 20 : 0) + 20*(e.mermaids||0) + 30*(e.pirates||0) + (e.skull ? 40 : 0);
+  if (s.loot) b += 20*(e.loot||0);
+  return b;
+}
+function scoreEntry(e, cards, s){
+  if (!e || e.bid == null || e.tricks == null) return null;
+  const bid = clamp(e.bid + (s.powers ? (e.harry||0) : 0), 0, cards);
+  const diff = Math.abs(e.tricks - bid);
+  const exact = diff === 0;
+  const raw = bonusRaw(e, s);
+  let base, bonus;
+  if (s.scoring === 'rascal'){
+    if (s.cannon && e.shot === 'cannon'){ base = exact ? 15*cards : 0; bonus = exact ? raw : 0; }
+    else { const f = exact ? 1 : diff === 1 ? .5 : 0; base = 10*cards*f; bonus = raw*f; }
+  } else {
+    if (bid === 0) base = exact ? 10*cards : -10*cards;
+    else base = exact ? 20*bid : -10*diff;
+    bonus = exact ? raw : 0;
+  }
+  const wager = s.powers ? (e.wager||0) * (exact ? 1 : -1) : 0;
+  return {bid, diff, exact, base, bonus, raw, wager, total: Math.round(base + bonus + wager)};
+}
+function totalsUpTo(g, upto){
+  const t = {}; g.players.forEach(p => t[p.id] = 0);
+  g.rounds.slice(0, upto).forEach(r => {
+    if (!r.done) return;
+    g.players.forEach(p => { const sc = scoreEntry(r.entries[p.id], r.cards, g.settings); if (sc) t[p.id] += sc.total; });
+  });
+  return t;
+}
+const totals = g => totalsUpTo(g, g.rounds.length);
+function ranks(g, t){ const r = {}; g.players.forEach(p => r[p.id] = 1 + g.players.filter(q => t[q.id] > t[p.id]).length); return r; }
+function sorted(g, t){ return [...g.players].sort((a,b) => t[b.id] - t[a.id]); }
+function doneCount(g){ return g.rounds.filter(r => r.done).length; }
+function getGame(id){ return id ? db.history.find(h => h.id === id) : db.current; }
+
+/* =========================================================
+   Rendu
+   ========================================================= */
+function render(){
+  const app = $('#app');
+  let html = '';
+  const v = ui.view;
+  html += topbar();
+  if (ui.saveFailed) html += `<div class="save-warn">⚠ La sauvegarde automatique est indisponible dans ce navigateur. Pensez à exporter vos parties.</div>`;
+  const enter = ui.lastView !== v + (ui.boardId||'') ? ' enter' : '';
+  let body = '';
+  if (v === 'setup') body = viewSetup();
+  else if (v === 'play' && db.current) body = viewPlay();
+  else if (v === 'board' && getGame(ui.boardId)) body = viewBoard();
+  else if (v === 'end' && getGame(ui.endId)) body = viewEnd();
+  else { ui.view = 'home'; body = viewHome(); }
+  html += `<main class="${enter}">${body}</main>`;
+  html += actionBar();
+  app.innerHTML = SVG_DEFS + html;
+  ui.lastView = ui.view + (ui.boardId||'');
+  $('#modal-root').innerHTML = viewModal();
+  ui.flash = {};
+}
+
+function topbar(){
+  const g = db.current;
+  const item = (view, icon, label, extra='') => `<button data-a="nav" data-v="${view}" ${extra} ${ui.view===view && !(view==='board' && ui.boardId) ? 'aria-current="page"' : ''}>${I[icon]}<span>${label}</span></button>`;
+  return `<header class="topbar"><div class="topbar-in">
+    <button class="brand" data-a="nav" data-v="home" aria-label="Retour au port">${I.emblem}<div><div class="brand-t">Skull King</div><div class="brand-s">Carnet de bord</div></div></button>
+    <nav class="nav" aria-label="Navigation">
+      ${item('home','anchor','Port')}
+      ${g ? item('play','wheel','Manche') + item('board','board','Classement') : ''}
+      <button data-a="rules">${I.book}<span>Règles</span></button>
+    </nav>
+  </div></header>`;
+}
+
+/* ---------------- Accueil ---------------- */
+function viewHome(){
+  const g = db.current;
+  let resume = '';
+  if (g){
+    const t = totals(g); const order = sorted(g, t); const dc = doneCount(g);
+    resume = `<section class="parch pad resume-card">
+      <div class="rc-info">
+        <div class="eyebrow">Partie en cours · ${esc(dateFr(g.createdAt))}</div>
+        <div class="rc-title">Manche ${Math.min(g.current+1, g.rounds.length)} sur ${g.rounds.length}</div>
+        <div class="mini-rank">${order.map((p,i) => `<span>${avatar(p, 'sm', i===0 && dc>0)} ${esc(p.name)} · ${fmtTotal(t[p.id])}</span>`).join('')}</div>
+      </div>
+      <div class="row">
+        <button class="btn btn-ghost btn-sm" data-a="abandon">${I.trash} Abandonner</button>
+        <button class="btn btn-gold" data-a="nav" data-v="play">Reprendre ${I.right}</button>
+      </div>
+    </section>`;
+  }
+  const hist = db.history;
+  const fame = {};
+  hist.forEach(h => { const t = totals(h); const max = Math.max(...h.players.map(p => t[p.id])); h.players.filter(p => t[p.id] === max).forEach(p => { const k = p.name.trim(); fame[k] = (fame[k]||0) + 1; }); });
+  const fameList = Object.entries(fame).sort((a,b) => b[1]-a[1]).slice(0, 6);
+  const fameMax = fameList.length ? fameList[0][1] : 1;
+
+  return `
+  <section class="hero">
+    <div class="hero-emblem">${I.emblem}</div>
+    <div>
+      <div class="eyebrow">Compteur de points</div>
+      <h1>Carnet de bord</h1>
+      <p>Annoncez vos plis, comptez vos prises et laissez le carnet calculer. Chaque manche est sauvegardée automatiquement sur cet appareil.</p>
+      <div class="hero-actions">
+        <button class="btn btn-gold" data-a="newGame">${I.plus} Nouvelle partie</button>
+        ${g ? `<button class="btn btn-ghost" data-a="nav" data-v="play">${I.wheel} Reprendre la partie</button>` : ''}
+      </div>
+    </div>
+  </section>
+  ${resume ? `<div style="margin-top:26px">${resume}</div>` : ''}
+  <div class="home-grid">
+    <section class="parch pad">
+      <div class="row" style="justify-content:space-between"><h2>Journal des traversées</h2><span class="eyebrow">${plural(hist.length,'partie')}</span></div>
+      ${hist.length ? `<ul class="hist-list" style="margin-top:8px">${hist.slice(0, 30).map(histItem).join('')}</ul>`
+        : `<div class="empty">${I.ship}Aucune partie terminée pour l’instant.<br>Vos traversées apparaîtront ici.</div>`}
+    </section>
+    <section class="parch pad">
+      <h2>Hall des capitaines</h2>
+      <div class="eyebrow" style="margin:2px 0 14px">Victoires cumulées</div>
+      ${fameList.length ? `<ul class="fame">${fameList.map(([n,w]) => `<li><span style="min-width:110px;font-weight:700">${esc(n)}</span><span class="bar"><i style="width:${(w/fameMax*100).toFixed(0)}%"></i></span><b>${w}</b></li>`).join('')}</ul>`
+        : `<div class="empty">${I.crown}Le premier vainqueur gravera son nom ici.</div>`}
+    </section>
+  </div>
+  ${installHint()}
+  <div class="foot-tools">
+    <button class="btn btn-ghost btn-sm" data-a="export">${I.download} Exporter les scores</button>
+    <button class="btn btn-ghost btn-sm" data-a="import">${I.upload} Importer</button>
+  </div>`;
+}
+const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function installHint(){
+  if (isStandalone() || !isIOS() || db.prefs.hideInstall) return '';
+  return `<section class="parch install">${I.phone}<div style="flex:1">
+    <b>Installez l’app sur votre iPhone :</b> touchez ${I.share} <b>Partager</b> dans Safari, puis <b>« Sur l’écran d’accueil »</b>.
+    Elle s’ouvrira en plein écran et fonctionnera hors ligne.</div>
+    <button class="icon-btn" data-a="hideInstall" aria-label="Masquer">${I.x}</button></section>`;
+}
+function histItem(h){
+  const t = totals(h); const order = sorted(h, t); const w = order[0];
+  return `<li class="hist-item">
+    <button class="hist-main" data-a="openHist" data-id="${h.id}">
+      <div class="hist-date">${esc(dateFr(h.finishedAt || h.createdAt))} · ${plural(h.players.length,'joueur')} · ${h.settings.scoring === 'rascal' ? 'Rascal' : 'Skull King'}</div>
+      <div class="hist-win">${I.crown} ${esc(w.name)} <span class="sc">${fmtTotal(t[w.id])}</span></div>
+      <div class="hist-others">${order.slice(1).map(p => esc(p.name) + ' ' + fmtTotal(t[p.id])).join(' · ')}</div>
+    </button>
+    <button class="icon-btn" data-a="delHist" data-id="${h.id}" aria-label="Supprimer cette partie">${I.trash}</button>
+  </li>`;
+}
+
+/* ---------------- Préparation ---------------- */
+function defaultSetup(){
+  const last = db.prefs.lastSetup;
+  if (last && last.players && last.players.length >= 2){
+    const s = clone(last); s.players = s.players.map((p,i) => ({name:p.name, color:p.color || COLORS[i % COLORS.length], ph:PIRATE_NAMES[i % PIRATE_NAMES.length]})); s.dealer = 0; return s;
+  }
+  return {players:[0,1,2,3].map(i => ({name:'', color:COLORS[i], ph:PIRATE_NAMES[i]})), scoring:'sk', cannon:false, loot:false, beasts:false, powers:false, format:'classic', dealer:0};
+}
+function viewSetup(){
+  const s = ui.setup; const n = s.players.length;
+  const known = [...new Set(db.history.flatMap(h => h.players.map(p => p.name)))];
+  const fmtSel = FORMATS.find(f => f.id === s.format) || FORMATS[0];
+  const capped = fmtSel.rounds.map(c => capCards(c, n, s));
+  const isCapped = capped.some((c,i) => c !== fmtSel.rounds[i]);
+
+  const crew = s.players.map((p,i) => `
+    <div class="crew-row">
+      <button class="swatch" style="--pc:${p.color}" data-a="cycleColor" data-i="${i}" aria-label="Changer la couleur de ${esc(p.name||p.ph)}" title="Changer de couleur"></button>
+      <input type="text" value="${esc(p.name)}" placeholder="${esc(p.ph)}" data-in="pname" data-i="${i}" list="knownNames" maxlength="20" autocomplete="off" aria-label="Nom du joueur ${i+1}">
+      <button class="dealer-btn" data-a="setDealer" data-i="${i}" aria-pressed="${s.dealer===i}" title="Premier donneur">${I.flag}<span>Donneur</span></button>
+      <span class="move"><button class="icon-btn" data-a="movePlayer" data-i="${i}" data-d="-1" ${i===0?'disabled':''} aria-label="Monter">${I.up}</button><button class="icon-btn" data-a="movePlayer" data-i="${i}" data-d="1" ${i===n-1?'disabled':''} aria-label="Descendre">${I.down}</button></span>
+      <button class="icon-btn" data-a="removePlayer" data-i="${i}" ${n<=2?'disabled':''} aria-label="Retirer">${I.x}</button>
+    </div>`).join('');
+
+  return `
+  <div class="sec-head" style="margin-top:4px"><h1 style="font-size:clamp(34px,5vw,48px)">Nouvelle traversée</h1></div>
+  <datalist id="knownNames">${known.map(k => `<option value="${esc(k)}">`).join('')}</datalist>
+  <div class="setup-grid">
+    <section class="parch pad">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2>L’équipage</h2><span class="eyebrow">${n} / 8 pirates</span></div>
+      <div class="crew">${crew}</div>
+      <button class="add-row" data-a="addPlayer" ${n>=8?'disabled':''}>${I.plus} Ajouter un pirate</button>
+      <p class="muted" style="font-size:14px;margin:12px 2px 0">L’ordre correspond au sens horaire autour de la table. Le donneur tourne à chaque manche.</p>
+      ${n===2 ? `<div class="note info">${I.info}<div><b>Règle à 2 joueurs :</b> le fantôme de Barbe Grise joue un 3ᵉ paquet. Il ne mise pas et ne marque pas de points.</div></div>` : ''}
+    </section>
+    <div class="stack">
+      <section class="parch pad">
+        <h2 style="margin-bottom:12px">Décompte des points</h2>
+        <div class="opt-cards">
+          <button class="opt-card" data-a="setOpt" data-k="scoring" data-v="sk" aria-pressed="${s.scoring==='sk'}">
+            <div class="oc-t">${I.skullS} Skull King</div>
+            <div class="oc-d">Le classique audacieux : +20 par pli si la mise est exacte, −10 par pli d’écart. Mise zéro : ±10 × cartes.</div>
+          </button>
+          <button class="opt-card" data-a="setOpt" data-k="scoring" data-v="rascal" aria-pressed="${s.scoring==='rascal'}">
+            <div class="oc-t">${I.target} Rascal</div>
+            <div class="oc-d">L’équilibré : 10 × cartes en jeu pour tous. Exact = tout, écart de 1 = moitié, au-delà = rien.</div>
+          </button>
+        </div>
+        ${s.scoring==='rascal' ? toggleRow('cannon', 'Boulet de canon / Chevrotine', 'Après la mise, chacun choisit : Boulet (15 × cartes, tout ou rien) ou Chevrotine (Rascal normal).', s.cannon) : ''}
+      </section>
+      <section class="parch pad">
+        <h2 style="margin-bottom:12px">Format</h2>
+        <div class="formats">${FORMATS.map(f => `
+          <button class="opt-card" data-a="setOpt" data-k="format" data-v="${f.id}" aria-pressed="${s.format===f.id}">
+            <div class="oc-t">${esc(f.name)}</div>
+            <div class="seq">${f.rounds.join(' · ')}</div>
+          </button>`).join('')}</div>
+        ${isCapped ? `<div class="note">${I.warn}<div>Avec ${n} joueurs, le paquet (${deckSize(s)} cartes) limite les mains : ${capped.join(' · ')} cartes.</div></div>` : ''}
+      </section>
+      <section class="parch pad">
+        <h2 style="margin-bottom:6px">Règles avancées</h2>
+        ${toggleRow('loot', 'Cartes Butin', 'Alliances : +20 chacun si les deux alliés réussissent leur mise.', s.loot)}
+        ${toggleRow('beasts', 'Kraken & Baleine blanche', 'Des plis peuvent être détruits : le total des plis peut être inférieur aux cartes.', s.beasts)}
+        ${toggleRow('powers', 'Pouvoirs des pirates', 'Rascal le Flambeur (pari 0/10/20) et Harry le Géant (mise ±1).', s.powers)}
+      </section>
+    </div>
+  </div>`;
+}
+function toggleRow(k, t, d, on){
+  return `<button class="toggle" role="switch" aria-checked="${!!on}" data-a="toggleOpt" data-k="${k}"><span class="tg-txt"><span class="tg-t">${t}</span><br><span class="tg-d">${d}</span></span><span class="switch"></span></button>`;
+}
+
+/* ---------------- Manche ---------------- */
+function avatar(p, size='', crown=false){
+  return `<span class="avatar ${size}" style="--pc:${p.color}">${crown ? `<span class="crown">${I.crownS}</span>` : ''}${esc(initial(p.name))}</span>`;
+}
+function activeRound(){ return ui.edit != null ? ui.draft : db.current.rounds[db.current.current]; }
+function activeIdx(){ return ui.edit != null ? ui.edit : db.current.current; }
+function activePhase(){ return ui.edit != null ? 'result' : db.current.phase; }
+
+function viewPlay(){
+  const g = db.current; const s = g.settings; const n = g.players.length;
+  const idx = activeIdx(); const r = activeRound(); const phase = activePhase();
+  const dealer = (g.startDealer + idx) % n; const lead = (dealer + 1) % n;
+  const before = totalsUpTo(g, idx);
+  const rk = ranks(g, before); const anyDone = idx > 0 && g.rounds.slice(0, idx).some(x => x.done);
+
+  const voyage = g.rounds.map((x,i) => {
+    const cl = i === idx ? 'cur' : x.done ? 'done' : '';
+    const leg = i ? `<span class="leg ${x.done || i <= idx ? 'done' : ''}"></span>` : '';
+    const label = `Manche ${i+1} · ${x.cards} carte${x.cards>1?'s':''}`;
+    return leg + (x.done && i !== idx ? `<button class="vdot ${cl}" data-a="editRound" data-i="${i}" title="${label} — corriger">${x.cards}</button>` : `<span class="vdot ${cl}" title="${label}">${x.cards}</span>`);
+  }).join('');
+
+  const sumBids = g.players.reduce((a,p) => a + (r.entries[p.id].bid ?? 0), 0);
+  let seas = '';
+  if (phase === 'bid' && g.players.every(p => r.entries[p.id].bid != null)){
+    if (sumBids > r.cards) seas = `${I.storm} Mer agitée : ${sumBids} plis annoncés pour ${r.cards} en jeu — ça va tanguer !`;
+    else if (sumBids < r.cards) seas = `${I.wave} Eaux calmes : ${sumBids} plis annoncés pour ${r.cards} — des plis vont tomber du ciel.`;
+    else seas = `${I.anchor} Équilibre parfait : ${sumBids} plis annoncés pour ${r.cards}.`;
+  }
+
+  const cards = g.players.map((p, pi) => phase === 'bid'
+    ? cardBid(g, r, p, pi === dealer, pi === lead, before[p.id], anyDone && rk[p.id] === 1)
+    : cardResult(g, r, p, pi === dealer, pi === lead, before[p.id], anyDone && rk[p.id] === 1)).join('');
+
+  return `
+  ${ui.edit != null ? `<div class="edit-banner">${I.edit}<div><b>Correction de la manche ${idx+1}.</b> Modifiez mises, plis ou bonus puis enregistrez.</div></div>` : ''}
+  <div class="round-head">
+    <div>
+      <div class="round-title"><h1>Manche <span class="n">${idx+1}</span></h1><span class="round-of">sur ${g.rounds.length}</span></div>
+      <div class="round-meta">
+        <span class="tag">${I.coins}<b>${r.cards}</b> carte${r.cards>1?'s':''} par joueur</span>
+        <span class="tag">${I.flag}Donneur : <b>${esc(g.players[dealer].name)}</b></span>
+        <span class="tag">${I.right}Ouvre : <b>${esc(g.players[lead].name)}</b></span>
+      </div>
+    </div>
+    <div class="voyage" aria-label="Progression de la partie">${voyage}</div>
+  </div>
+  ${ui.edit == null ? `<div class="phases" role="list">
+    <button class="phase ${phase==='result'?'donep':''}" data-a="toPhase" data-v="bid" ${phase==='bid'?'aria-current="step"':''}><span class="num">${phase==='result'?'✓':'1'}</span>Annonces</button>
+    <button class="phase" data-a="toPhase" data-v="result" ${phase==='result'?'aria-current="step"':''} ${g.players.every(p => r.entries[p.id].bid != null) ? '' : 'disabled'}><span class="num">2</span>Plis &amp; bonus</button>
+  </div>` : ''}
+  ${seas ? `<div class="seas">${seas}</div>` : ''}
+  <div class="players">${cards}</div>
+  ${phase === 'result' ? `<p class="hint">${I.info} Les bonus ne comptent que si la mise est réussie${s.scoring==='rascal' ? ' (la moitié pour un écart de 1 en Chevrotine)' : ''}.</p>` : ''}`;
+}
+
+function pcHead(p, isDealer, isLead, total, leader, right){
+  return `<div class="pc-head">
+    ${avatar(p, '', leader)}
+    <div class="pc-name"><div class="nm">${esc(p.name)}</div>
+      <div class="sub">${isDealer ? `<span class="badge">${I.flag}Donne</span>` : ''}${isLead ? `<span class="badge lead">Ouvre</span>` : ''}<span>${fmtTotal(total)} pts</span></div>
+    </div>
+    ${right}
+  </div>`;
+}
+function chipRow(pid, field, value, max){
+  let h = '';
+  for (let v = 0; v <= max; v++) h += `<button class="chip ${v===0?'zero':''} ${value===v?'on':''}" data-a="setVal" data-pid="${pid}" data-f="${field}" data-v="${v}" aria-pressed="${value===v}">${v}</button>`;
+  return `<div class="chips">${h}</div>`;
+}
+function cardBid(g, r, p, isDealer, isLead, total, leader){
+  const e = r.entries[p.id]; const s = g.settings;
+  const right = `<div class="pc-total"><div class="v ${e.bid==null?'nul':''}">${e.bid==null ? '–' : e.bid}</div><div class="l">mise</div></div>`;
+  let shot = '';
+  if (s.scoring === 'rascal' && s.cannon){
+    shot = `<div class="label">Type de mise<span class="grow"></span></div>
+      <div class="seg">
+        <button data-a="setShot" data-pid="${p.id}" data-v="grape" aria-pressed="${e.shot!=='cannon'}">${I.grape} Chevrotine</button>
+        <button data-a="setShot" data-pid="${p.id}" data-v="cannon" aria-pressed="${e.shot==='cannon'}">${I.cannon} Boulet de canon</button>
+      </div>`;
+  }
+  return `<article class="parch pcard" style="--pc:${p.color}">
+    ${pcHead(p, isDealer, isLead, total, leader, right)}
+    <div class="label">Annonce<span class="grow"></span></div>
+    ${chipRow(p.id, 'bid', e.bid, r.cards)}
+    ${shot}
+  </article>`;
+}
+function cardResult(g, r, p, isDealer, isLead, total, leader){
+  const e = r.entries[p.id]; const s = g.settings;
+  const sc = scoreEntry(e, r.cards, s);
+  const flash = ui.flash[p.id] ? ' pop' : '';
+  const right = `<div class="preview">${sc
+      ? `<div class="pv ${cls(sc.total)}${flash}">${fmt(sc.total)}</div><div class="pl ${cls(sc.total)}">${sc.exact ? 'Réussi' : s.scoring==='rascal' && sc.diff===1 && e.shot!=='cannon' ? 'Écart 1' : 'Raté'}</div>`
+      : `<div class="pv nul">…</div><div class="pl nul">en attente</div>`}</div>`;
+  const effBid = clamp(e.bid + (s.powers ? e.harry||0 : 0), 0, r.cards);
+  const raw = bonusRaw(e, s);
+  const open = !!ui.open[p.id];
+  const shotTag = s.scoring==='rascal' && s.cannon ? `<span class="badge">${e.shot==='cannon' ? I.cannon + 'Boulet' : I.grape + 'Chevrotine'}</span>` : '';
+
+  let verdict = '';
+  if (sc){
+    if (sc.exact) verdict = `<div class="verdict good">${I.check} Mise tenue : ${describe(sc, s, r.cards, e)}</div>`;
+    else verdict = `<div class="verdict bad">${I.x} ${sc.diff === 1 ? 'Raté d’un pli' : 'Raté de ' + sc.diff + ' plis'} : ${describe(sc, s, r.cards, e)}</div>`;
+  } else verdict = `<div class="verdict">Indiquez le nombre de plis remportés.</div>`;
+
+  return `<article class="parch pcard" style="--pc:${p.color}">
+    ${pcHead(p, isDealer, isLead, total, leader, right)}
+    <div class="bidline">
+      <span class="bl-l">Mise</span>
+      <span class="stepper">
+        <button data-a="bidAdj" data-pid="${p.id}" data-d="-1" ${e.bid<=0?'disabled':''} aria-label="Diminuer la mise">${I.minus}</button>
+        <span class="bl-v">${e.bid}</span>
+        <button data-a="bidAdj" data-pid="${p.id}" data-d="1" ${e.bid>=r.cards?'disabled':''} aria-label="Augmenter la mise">${I.plus}</button>
+      </span>
+      ${s.powers && e.harry ? `<span class="harry">→ ${effBid} (Harry)</span>` : ''}
+      ${shotTag}
+    </div>
+    <div class="label">Plis remportés<span class="grow"></span></div>
+    ${chipRow(p.id, 'tricks', e.tricks, r.cards)}
+    <button class="bonus-toggle" data-a="toggleBonus" data-pid="${p.id}" aria-expanded="${open}">
+      ${I.coins} Bonus ${sc && raw && sc.bonus < raw ? `<span class="lost">${sc.bonus ? 'réduits' : 'perdus'}</span>` : ''}
+      <span class="bt-v">${raw ? '+' + raw : '0'}</span>
+      <span class="chev">${I.down}</span>
+    </button>
+    ${open ? bonusPanel(g, r, p) : ''}
+    ${verdict}
+  </article>`;
+}
+function describe(sc, s, cards, e){
+  const parts = [];
+  if (s.scoring === 'rascal'){
+    if (s.cannon && e.shot === 'cannon') parts.push(sc.exact ? `boulet 15 × ${cards} = ${sc.base}` : 'boulet manqué, 0');
+    else parts.push(sc.exact ? `10 × ${cards} = ${sc.base}` : sc.diff === 1 ? `moitié de ${10*cards} = ${sc.base}` : 'échec cuisant, 0');
+  } else if (sc.bid === 0) parts.push(sc.exact ? `zéro tenu, 10 × ${cards} = ${sc.base}` : `zéro raté, −10 × ${cards} = ${sc.base}`);
+  else parts.push(sc.exact ? `20 × ${sc.bid} = ${sc.base}` : `−10 × ${sc.diff} = ${sc.base}`);
+  if (sc.bonus) parts.push(`bonus ${fmt(sc.bonus)}`);
+  if (sc.wager) parts.push(`pari ${fmt(sc.wager)}`);
+  return parts.join(', ');
+}
+function bonusPanel(g, r, p){
+  const e = r.entries[p.id]; const s = g.settings;
+  const items = BONUS.filter(b => !b.opt || s[b.opt]).map(b => {
+    let ctrl;
+    if (b.type === 'flag'){
+      ctrl = `<button class="mini-switch" role="switch" aria-checked="${!!e[b.k]}" data-a="flag" data-pid="${p.id}" data-f="${b.k}" aria-label="${b.t}"></button>`;
+    } else {
+      const sumOthers = b.cap ? g.players.reduce((a,q) => a + (q.id === p.id ? 0 : (r.entries[q.id][b.k]||0)), 0) : 0;
+      const max = b.cap ? Math.min(b.max, b.cap - sumOthers) : b.max;
+      ctrl = `<span class="stepper">
+        <button data-a="inc" data-pid="${p.id}" data-f="${b.k}" data-d="-1" ${(e[b.k]||0)<=0?'disabled':''} aria-label="Moins">${I.minus}</button>
+        <output>${e[b.k]||0}</output>
+        <button data-a="inc" data-pid="${p.id}" data-f="${b.k}" data-d="1" ${(e[b.k]||0)>=max?'disabled':''} aria-label="Plus">${I.plus}</button>
+      </span>`;
+    }
+    const icon = b.icon === 'crown' ? I.crownB : I[b.icon];
+    return `<div class="bitem"><span class="bicon">${icon}</span><span class="btxt"><span class="bt">${b.t}<span class="bpts">+${b.pts}</span></span><br><span class="bd">${b.d}</span></span>${ctrl}</div>`;
+  }).join('');
+  let powers = '';
+  if (s.powers){
+    powers = `
+    <div class="bitem"><span class="bicon">${I.dice}</span><span class="btxt"><span class="bt">Rascal le Flambeur</span><br><span class="bd">Pari gagné si mise réussie, perdu sinon</span></span>
+      <span class="seg">${[0,10,20].map(v => `<button data-a="setWager" data-pid="${p.id}" data-v="${v}" aria-pressed="${(e.wager||0)===v}">${v}</button>`).join('')}</span></div>
+    <div class="bitem"><span class="bicon">${I.giant}</span><span class="btxt"><span class="bt">Harry le Géant</span><br><span class="bd">Modifie la mise de ±1</span></span>
+      <span class="seg">${[-1,0,1].map(v => `<button data-a="setHarry" data-pid="${p.id}" data-v="${v}" aria-pressed="${(e.harry||0)===v}">${v>0?'+1':v<0?'−1':'0'}</button>`).join('')}</span></div>`;
+  }
+  return `<div class="bonus-panel">${items}${powers}</div>`;
+}
+
+/* ---------------- Barre d'action ---------------- */
+function actionBar(){
+  if (ui.view === 'setup'){
+    const n = ui.setup.players.length;
+    return `<div class="actionbar"><div class="actionbar-in">
+      <div class="ab-status"><b>${n}</b> pirates à bord · ${(FORMATS.find(f => f.id===ui.setup.format)||FORMATS[0]).name} · ${ui.setup.scoring==='rascal'?'Rascal':'Skull King'}</div>
+      <div class="ab-btns"><button class="btn btn-ghost" data-a="nav" data-v="home">Annuler</button><button class="btn btn-gold" data-a="startGame">${I.anchor} Lever l’ancre</button></div>
+    </div></div>`;
+  }
+  if (ui.view !== 'play' || !db.current) return '';
+  const g = db.current; const r = activeRound(); const phase = activePhase(); const s = g.settings;
+  const ents = g.players.map(p => r.entries[p.id]);
+  if (phase === 'bid'){
+    const filled = ents.filter(e => e.bid != null).length; const all = filled === ents.length;
+    return `<div class="actionbar"><div class="actionbar-in">
+      <div class="ab-status">${all ? `<span class="ok">Toutes les annonces sont faites.</span> Σ mises <b>${ents.reduce((a,e)=>a+e.bid,0)}</b> pour <b>${r.cards}</b> pli${r.cards>1?'s':''}.` : `Annonces : <b>${filled}</b> / ${ents.length} — touchez le nombre de plis annoncé par chaque pirate.`}</div>
+      <div class="ab-btns"><button class="btn btn-gold" data-a="toPhase" data-v="result" ${all?'':'disabled'}>Jouer la manche ${I.right}</button></div>
+    </div></div>`;
+  }
+  const filled = ents.filter(e => e.tricks != null).length; const all = filled === ents.length;
+  const sumT = ents.reduce((a,e) => a + (e.tricks ?? 0), 0);
+  const v = validateTricks(g, r);
+  let status;
+  if (!all) status = `Plis saisis : <b>${filled}</b> / ${ents.length} · total <b>${sumT}</b> / ${r.cards}`;
+  else if (!v.ok) status = `<span class="warn">${v.msg}</span>`;
+  else status = `<span class="ok">${v.msg}</span>`;
+  const editing = ui.edit != null;
+  return `<div class="actionbar"><div class="actionbar-in">
+    <div class="ab-status">${status}</div>
+    <div class="ab-btns">${editing
+      ? `<button class="btn btn-ghost" data-a="cancelEdit">Annuler</button><button class="btn btn-gold" data-a="saveEdit" ${all && v.ok ? '' : 'disabled'}>${I.check} Enregistrer</button>`
+      : `<button class="btn btn-gold" data-a="finishRound" ${all && v.ok ? '' : 'disabled'}>${I.check} ${g.current === g.rounds.length-1 ? 'Terminer la partie' : 'Valider la manche'}</button>`}
+    </div>
+  </div></div>`;
+}
+function validateTricks(g, r){
+  const ents = g.players.map(p => r.entries[p.id]);
+  const sumT = ents.reduce((a,e) => a + (e.tricks ?? 0), 0);
+  if (sumT > r.cards) return {ok:false, msg:`${sumT} plis saisis pour ${r.cards} en jeu : il y en a ${sumT - r.cards} de trop.`};
+  if (sumT < r.cards){
+    if (g.settings.beasts) return {ok:true, msg:`${sumT} / ${r.cards} plis — ${r.cards - sumT} détruit${r.cards-sumT>1?'s':''} par une bête des profondeurs ?`};
+    return {ok:false, msg:`${sumT} plis saisis pour ${r.cards} en jeu : il manque ${r.cards - sumT} pli${r.cards-sumT>1?'s':''}.`};
+  }
+  return {ok:true, msg: r.cards > 1 ? `Les ${r.cards} plis sont attribués. Prêt à valider.` : `Le pli est attribué. Prêt à valider.`};
+}
+
+/* ---------------- Classement ---------------- */
+function viewBoard(){
+  const g = getGame(ui.boardId); const readonly = !!ui.boardId;
+  const t = totals(g); const order = sorted(g, t); const rk = ranks(g, t); const dc = doneCount(g);
+  const maxT = Math.max(...g.players.map(p => t[p.id]));
+  const strip = order.map(p => `<div class="parch rank-card ${rk[p.id]===1 && dc ? 'first' : ''}" style="--pc:${p.color}">
+      <span class="rk">${rk[p.id]}</span>${avatar(p, 'sm', rk[p.id]===1 && dc>0)}<span class="rn">${esc(p.name)}</span><span class="rv">${fmtTotal(t[p.id])}</span></div>`).join('');
+
+  const cum = {}; g.players.forEach(p => cum[p.id] = 0);
+  const rows = g.rounds.map((r,i) => {
+    const isCur = !readonly && db.current && i === db.current.current && !r.done;
+    const cells = g.players.map(p => {
+      if (!r.done) return `<td><span class="dash">${isCur && r.entries[p.id].bid != null && db.current.phase==='result' ? 'mise ' + r.entries[p.id].bid : '—'}</span></td>`;
+      const e = r.entries[p.id]; const sc = scoreEntry(e, r.cards, g.settings); cum[p.id] += sc.total;
+      return `<td><div class="cell-pts ${cls(sc.total)}">${fmt(sc.total)}</div><div class="cell-sub"><span class="${sc.exact?'ex':'mi'}">${sc.bid}/${e.tricks}</span>${sc.raw && sc.bonus ? ' ★' : ''} · ${fmtTotal(cum[p.id])}</div></td>`;
+    }).join('');
+    const click = !readonly && r.done;
+    return `<tr class="${click?'click':''} ${isCur?'cur':''}" ${click ? `data-a="editRound" data-i="${i}" title="Corriger la manche ${i+1}"` : ''}><td class="rcol">${i+1}<small>${r.cards} c.</small></td>${cells}</tr>`;
+  }).join('');
+
+  return `
+  <div class="sec-head" style="margin-top:4px">
+    <h1 style="font-size:clamp(34px,5vw,48px)">${readonly ? 'Traversée du <span class="n">' + esc(new Date(g.finishedAt||g.createdAt).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})) + '</span>' : 'Classement'}</h1>
+    <span class="eyebrow">${dc} / ${g.rounds.length} manches · ${g.settings.scoring==='rascal' ? 'Rascal' : 'Skull King'}</span>
+  </div>
+  <div class="rank-strip">${strip}</div>
+  <section class="parch">
+    <div class="board-wrap"><table class="board">
+      <thead><tr><th class="rcol">Manche</th>${g.players.map(p => `<th><div class="ph">${avatar(p,'sm')}<span class="nm">${esc(p.name)}</span></div></th>`).join('')}</tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td class="rcol">Total</td>${g.players.map(p => `<td class="${t[p.id]===maxT && dc ? 'lead-cell' : ''}">${fmtTotal(t[p.id])}</td>`).join('')}</tr></tfoot>
+    </table></div>
+  </section>
+  ${!readonly && dc ? `<p class="hint">${I.edit} Touchez une manche terminée pour la corriger. Format : mise/plis · ★ bonus · cumul.</p>` : `<p class="hint">${I.info} Format : mise/plis · ★ bonus · cumul.</p>`}
+  <section class="parch chart-box">
+    <h3 style="margin:0 0 6px">Cap des scores</h3>
+    ${chartSVG(g)}
+  </section>
+  <div class="board-actions">
+    ${readonly ? `<button class="btn btn-ghost" data-a="nav" data-v="home">${I.left} Retour au port</button><button class="btn btn-gold" data-a="rematch" data-id="${g.id}">${I.anchor} Revanche</button>`
+      : `<button class="btn btn-gold" data-a="nav" data-v="play">${I.wheel} Retour à la manche</button>`}
+  </div>`;
+}
+function niceStep(r){ const p = 10 ** Math.floor(Math.log10(r || 1)); const m = r / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
+function chartSVG(g){
+  const done = g.rounds.filter(r => r.done).length;
+  if (!done) return `<div class="empty" style="padding:16px">${I.ship}Le cap apparaîtra après la première manche.</div>`;
+  const series = g.players.map(p => { let c = 0; const pts = [0]; g.rounds.forEach(r => { if (!r.done) return; c += scoreEntry(r.entries[p.id], r.cards, g.settings).total; pts.push(c); }); return {p, pts}; });
+  const all = series.flatMap(s => s.pts);
+  let mn = Math.min(0, ...all), mx = Math.max(20, ...all);
+  const step = niceStep((mx - mn) / 4); mn = Math.floor(mn / step) * step; mx = Math.ceil(mx / step) * step;
+  const W = 720, H = 300, L = 46, R = 130, T = 14, B = 30;
+  const x = i => L + (W - L - R) * i / done;
+  const y = v => T + (H - T - B) * (mx - v) / (mx - mn || 1);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution des scores">`;
+  for (let v = mn; v <= mx + 1e-9; v += step){
+    s += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${v===0 ? 'rgba(42,28,16,.55)' : 'rgba(42,28,16,.14)'}" stroke-width="${v===0?1.5:1}" ${v===0?'':'stroke-dasharray="3 4"'}/>`;
+    s += `<text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="12" fill="#6b5236" font-family="Crimson Pro,Georgia,serif">${fmtTotal(v)}</text>`;
+  }
+  for (let i = 0; i <= done; i++){
+    s += `<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="12" fill="#6b5236" font-family="Crimson Pro,Georgia,serif">${i===0 ? 'départ' : 'M' + i}</text>`;
+  }
+  series.forEach(({p, pts}) => {
+    s += `<polyline fill="none" stroke="${p.color}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="${pts.map((v,i) => x(i).toFixed(1)+','+y(v).toFixed(1)).join(' ')}"/>`;
+    pts.forEach((v,i) => { if (i) s += `<circle cx="${x(i)}" cy="${y(v)}" r="3.5" fill="${p.color}" stroke="#f3e7c9" stroke-width="1.5"><title>${esc(p.name)} · manche ${i} : ${fmtTotal(v)}</title></circle>`; });
+  });
+  // étiquettes de fin sans chevauchement
+  const labels = series.map(({p, pts}) => ({p, v: pts[pts.length-1], y: y(pts[pts.length-1])})).sort((a,b) => a.y - b.y);
+  for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i-1].y < 15) labels[i].y = labels[i-1].y + 15;
+  const over = labels.length ? labels[labels.length-1].y - (H - B) : 0;
+  if (over > 0) labels.forEach(l => l.y -= over);
+  labels.forEach(l => {
+    const nm = l.p.name.length > 12 ? l.p.name.slice(0, 11).trim() + '…' : l.p.name;
+    s += `<text x="${W-R+10}" y="${l.y+4}" font-size="13" font-weight="700" fill="${l.p.color}" font-family="Crimson Pro,Georgia,serif">${esc(nm)} ${fmtTotal(l.v)}</text>`;
+  });
+  return s + '</svg>';
+}
+
+/* ---------------- Fin de partie ---------------- */
+function viewEnd(){
+  const g = getGame(ui.endId); const t = totals(g); const order = sorted(g, t); const rk = ranks(g, t);
+  const winners = order.filter(p => rk[p.id] === 1);
+  const pod = order.slice(0, 3);
+  const podOrder = pod.length === 3 ? [pod[1], pod[0], pod[2]] : pod.length === 2 ? [pod[1], pod[0]] : pod;
+  const podium = podOrder.map(p => { const place = order.indexOf(p) + 1; return `<div class="pod p${place}">${avatar(p, '', place===1)}<div class="pn">${esc(p.name)}</div><div class="pv">${fmtTotal(t[p.id])}</div><div class="step">${rk[p.id]}</div></div>`; }).join('');
+
+  // statistiques
+  const st = {}; g.players.forEach(p => st[p.id] = {exact:0, rounds:0, bonus:0, best:-Infinity, worst:Infinity, zero:0});
+  g.rounds.forEach(r => { if (!r.done) return; g.players.forEach(p => { const e = r.entries[p.id]; const sc = scoreEntry(e, r.cards, g.settings); const x = st[p.id]; x.rounds++; if (sc.exact) x.exact++; x.bonus += sc.bonus; x.best = Math.max(x.best, sc.total); x.worst = Math.min(x.worst, sc.total); if (sc.bid === 0 && sc.exact) x.zero++; }); });
+  const top = (key, dir=1) => { const v = g.players.map(p => st[p.id][key]); const best = dir > 0 ? Math.max(...v) : Math.min(...v); return {v:best, who:g.players.filter(p => st[p.id][key] === best)}; };
+  const names = arr => arr.map(p => esc(p.name)).join(' & ');
+  const ex = top('exact'), bo = top('bonus'), be = top('best'), wo = top('worst', -1), ze = top('zero');
+  const awards = [
+    {i:I.target, t:'Œil de lynx', d:`${names(ex.who)} — ${ex.v} mise${ex.v>1?'s':''} exacte${ex.v>1?'s':''} sur ${g.rounds.filter(r=>r.done).length}`},
+    bo.v > 0 ? {i:I.coins, t:'Chasseur de trésors', d:`${names(bo.who)} — ${bo.v} pts de bonus`} : null,
+    {i:I.crown, t:'Coup d’éclat', d:`${names(be.who)} — ${fmt(be.v)} en une manche`},
+    ze.v > 0 ? {i:I.wave, t:'Fantôme des mers', d:`${names(ze.who)} — ${ze.v} mise${ze.v>1?'s':''} zéro tenue${ze.v>1?'s':''}`} : null,
+    wo.v < 0 ? {i:I.storm, t:'Naufrage', d:`${names(wo.who)} — ${fmt(wo.v)} en une manche`} : null,
+  ].filter(Boolean);
+
+  return `
+  <div class="end-hero">
+    <div class="eyebrow">Fin de la traversée · ${esc(dateFr(g.finishedAt))}</div>
+    <h1>${winners.length > 1 ? 'Capitaines à égalité !' : 'Capitaine des Sept Mers'}</h1>
+    <p style="font-size:20px;color:#e2d3b0;margin:8px 0 0">${names(winners)} remporte${winners.length>1?'nt':''} la partie avec <b style="color:var(--gold-hi)">${fmtTotal(t[winners[0].id])}</b> points.</p>
+  </div>
+  <div class="podium">${podium}</div>
+  ${order.length > 3 ? `<section class="parch pad" style="max-width:640px;margin:0 auto"><ul class="sum-list" style="margin:0">${order.slice(3).map(p => `<li><span class="sr-rk">${rk[p.id]}</span>${avatar(p,'sm')}<span class="sr-nm">${esc(p.name)}</span><span class="sr-tt">${fmtTotal(t[p.id])}</span></li>`).join('')}</ul></section>` : ''}
+  <div class="awards">${awards.map(a => `<div class="parch award">${a.i}<div><div class="at">${a.t}</div><div class="ad">${a.d}</div></div></div>`).join('')}</div>
+  <div class="end-actions">
+    <button class="btn btn-ghost" data-a="nav" data-v="home">${I.anchor} Retour au port</button>
+    <button class="btn btn-ghost" data-a="openHist" data-id="${g.id}">${I.board} Tableau détaillé</button>
+    <button class="btn btn-gold" data-a="rematch" data-id="${g.id}">${I.wheel} Revanche</button>
+  </div>`;
+}
+function coinRain(){
+  const box = document.createElement('div'); box.className = 'coins';
+  for (let i = 0; i < 46; i++){
+    const c = document.createElement('i');
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.animationDuration = (2.2 + Math.random()*2.4) + 's';
+    c.style.animationDelay = (Math.random()*1.2) + 's';
+    const sz = 12 + Math.random()*12; c.style.width = c.style.height = sz + 'px';
+    box.appendChild(c);
+  }
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 6000);
+}
+
+/* ---------------- Modales ---------------- */
+function viewModal(){
+  const m = ui.modal; if (!m) return '';
+  let inner = '';
+  if (m.type === 'confirm'){
+    inner = `<div class="parch dialog" role="dialog" aria-modal="true" aria-labelledby="dlgT">
+      <h2 id="dlgT">${m.title}</h2><p style="font-size:17px">${m.text}</p>
+      <div class="dlg-actions"><button class="btn btn-ghost" data-a="closeModal">Annuler</button><button class="btn ${m.danger ? 'btn-blood' : 'btn-gold'}" data-a="confirmYes">${m.yes}</button></div></div>`;
+  } else if (m.type === 'summary'){
+    const g = getGame(m.gameId); const i = m.round; const r = g.rounds[i];
+    const before = totalsUpTo(g, i), after = totalsUpTo(g, i+1);
+    const rb = ranks(g, before), ra = ranks(g, after);
+    const order = sorted(g, after);
+    const list = order.map(p => {
+      const sc = scoreEntry(r.entries[p.id], r.cards, g.settings);
+      const mv = i === 0 ? 0 : rb[p.id] - ra[p.id];
+      return `<li><span class="sr-rk">${ra[p.id]}</span>${avatar(p,'sm', ra[p.id]===1)}<span class="sr-nm">${esc(p.name)}</span>
+        <span class="sr-mv ${mv>0?'pos':mv<0?'neg':'nul'}">${mv>0 ? '▲'+mv : mv<0 ? '▼'+(-mv) : ''}</span>
+        <span class="sr-rd ${cls(sc.total)}">${fmt(sc.total)}</span><span class="sr-tt">${fmtTotal(after[p.id])}</span></li>`;
+    }).join('');
+    const last = m.last;
+    inner = `<div class="parch dialog" role="dialog" aria-modal="true" aria-labelledby="dlgT">
+      <div class="eyebrow">Bilan</div><h2 id="dlgT">Fin de la manche ${i+1}</h2>
+      <ul class="sum-list">${list}</ul>
+      <div class="dlg-actions">${last
+        ? `<button class="btn btn-gold" data-a="closeSummary">${I.crown} Découvrir le podium</button>`
+        : `<button class="btn btn-ghost" data-a="closeSummaryBoard">${I.board} Classement</button><button class="btn btn-gold" data-a="closeSummary">${I.ship} Manche ${i+2} · ${g.rounds[i+1].cards} carte${g.rounds[i+1].cards>1?'s':''}</button>`}</div></div>`;
+  } else if (m.type === 'rules'){
+    inner = `<div class="parch dialog wide rules" role="dialog" aria-modal="true" aria-labelledby="dlgT">
+      <div class="row" style="justify-content:space-between"><h2 id="dlgT">Aide-mémoire</h2><button class="icon-btn" data-a="closeModal" aria-label="Fermer">${I.x}</button></div>
+      <h3>Score « Skull King »</h3>
+      <table>
+        <tr><td>Mise de 1 ou plus réussie</td><td>+20 par pli</td></tr>
+        <tr><td>Mise de 1 ou plus ratée</td><td>−10 par pli d’écart</td></tr>
+        <tr><td>Mise zéro réussie</td><td>+10 × cartes distribuées</td></tr>
+        <tr><td>Mise zéro ratée</td><td>−10 × cartes distribuées</td></tr>
+      </table>
+      <p class="muted">Les points bonus ne sont acquis que si la mise est réussie.</p>
+      <h3>Points bonus</h3>
+      <table>
+        <tr><td>Chaque 14 jaune, violet ou vert possédé</td><td>+10</td></tr>
+        <tr><td>14 noir (Drapeau pirate) possédé</td><td>+20</td></tr>
+        <tr><td>Sirène capturée par un pirate</td><td>+20 chacune</td></tr>
+        <tr><td>Pirate capturé par Skull King</td><td>+30 chacun</td></tr>
+        <tr><td>Skull King capturé par une sirène</td><td>+40</td></tr>
+        <tr><td>Alliance Butin (les deux alliés réussissent)</td><td>+20 chacun</td></tr>
+      </table>
+      <h3>Score « Rascal »</h3>
+      <table>
+        <tr><td>Coup direct (mise exacte)</td><td>10 × cartes + bonus</td></tr>
+        <tr><td>Frappe à revers (écart de 1)</td><td>moitié</td></tr>
+        <tr><td>Échec cuisant (écart de 2+)</td><td>0</td></tr>
+        <tr><td>Boulet de canon (option)</td><td>15 × cartes si exact, sinon 0</td></tr>
+      </table>
+      <h3>Pouvoirs des pirates</h3>
+      <table>
+        <tr><td>Rascal le Flambeur : pari</td><td>±0 / 10 / 20</td></tr>
+        <tr><td>Harry le Géant : modifier sa mise</td><td>−1 / 0 / +1</td></tr>
+      </table>
+      <p class="muted" style="margin-top:14px">Partie standard : 10 manches, de 1 à 10 cartes. À 7-8 joueurs, les dernières mains sont limitées par la taille du paquet.</p>
+    </div>`;
+  }
+  return `<div class="overlay" data-a="overlay">${inner}</div>`;
+}
+function confirmBox(title, text, yes, fn, danger=true){ pendingConfirm = fn; ui.modal = {type:'confirm', title, text, yes, danger}; render(); }
+
+let toastTimer;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2400); }
+
+/* =========================================================
+   Actions
+   ========================================================= */
+function entryOf(pid){ return activeRound().entries[pid]; }
+function commit(){ if (ui.edit == null) save(); render(); }
+
+function startGame(){
+  const s = ui.setup; const n = s.players.length;
+  const fmtSel = FORMATS.find(f => f.id === s.format) || FORMATS[0];
+  const settings = {scoring:s.scoring, cannon:s.scoring==='rascal' && s.cannon, loot:s.loot, beasts:s.beasts, powers:s.powers, format:s.format};
+  const players = s.players.map((p,i) => ({id:'p' + i + uid(), name:(p.name.trim() || p.ph), color:p.color}));
+  const g = {
+    id:uid(), createdAt:Date.now(), players, settings, startDealer:s.dealer, current:0, phase:'bid',
+    rounds: fmtSel.rounds.map(c => { const entries = {}; players.forEach(p => entries[p.id] = newEntry()); return {cards:capCards(c, n, settings), entries, done:false}; }),
+  };
+  db.current = g;
+  db.prefs.lastSetup = {players:players.map(p => ({name:p.name, color:p.color})), scoring:s.scoring, cannon:s.cannon, loot:s.loot, beasts:s.beasts, powers:s.powers, format:s.format};
+  ui.open = {}; ui.edit = null; ui.view = 'play';
+  save(); render(); window.scrollTo(0,0);
+  toast('Larguez les amarres ! Manche 1');
+}
+function finishRound(){
+  const g = db.current; const i = g.current; const r = g.rounds[i];
+  r.done = true; r.finishedAt = Date.now();
+  const last = i === g.rounds.length - 1;
+  if (last){ g.finishedAt = Date.now(); db.history.unshift(g); db.current = null; ui.endId = g.id; }
+  else { g.current++; g.phase = 'bid'; }
+  ui.open = {};
+  ui.modal = {type:'summary', gameId: last ? null : undefined, round:i, last};
+  ui.modal.gameId = last ? g.id : null;
+  save(); render();
+}
+
+const A = {
+  nav(d){
+    if (ui.edit != null && d.v !== 'play'){ ui.edit = null; ui.draft = null; }
+    ui.view = d.v; ui.boardId = null;
+    if (d.v === 'play' && !db.current) ui.view = 'home';
+    render(); window.scrollTo(0,0);
+  },
+  newGame(){
+    const go = () => { db.current = null; save(); ui.setup = defaultSetup(); ui.view = 'setup'; ui.modal = null; render(); window.scrollTo(0,0); };
+    if (db.current) confirmBox('Une partie est en cours', 'Commencer une nouvelle partie abandonnera la partie en cours. Elle ne sera pas enregistrée dans le journal.', 'Abandonner et recommencer', go);
+    else go();
+  },
+  abandon(){ confirmBox('Abandonner la partie ?', 'La partie en cours sera supprimée définitivement. Cette action est irréversible.', 'Abandonner', () => { db.current = null; ui.edit = null; save(); ui.modal = null; ui.view = 'home'; render(); toast('Partie abandonnée'); }); },
+  addPlayer(){
+    const s = ui.setup; if (s.players.length >= 8) return;
+    const used = s.players.map(p => p.color); const usedPh = s.players.map(p => p.ph);
+    s.players.push({name:'', color:COLORS.find(c => !used.includes(c)) || COLORS[s.players.length % COLORS.length], ph:PIRATE_NAMES.find(n => !usedPh.includes(n)) || 'Pirate ' + (s.players.length+1)});
+    render();
+    const inputs = document.querySelectorAll('[data-in="pname"]'); inputs[inputs.length-1]?.focus();
+  },
+  removePlayer(d){ const s = ui.setup; if (s.players.length <= 2) return; const i = +d.i; s.players.splice(i,1); if (s.dealer >= s.players.length || s.dealer === i) s.dealer = 0; else if (s.dealer > i) s.dealer--; render(); },
+  movePlayer(d){ const s = ui.setup; const i = +d.i, j = i + +d.d; if (j < 0 || j >= s.players.length) return; [s.players[i], s.players[j]] = [s.players[j], s.players[i]]; if (s.dealer === i) s.dealer = j; else if (s.dealer === j) s.dealer = i; render(); },
+  cycleColor(d){ const p = ui.setup.players[+d.i]; const used = ui.setup.players.map(q => q.color); let k = COLORS.indexOf(p.color); for (let t = 0; t < COLORS.length; t++){ k = (k+1) % COLORS.length; if (!used.includes(COLORS[k])) break; } p.color = COLORS[k]; render(); },
+  setDealer(d){ ui.setup.dealer = +d.i; render(); },
+  setOpt(d){ ui.setup[d.k] = d.v; render(); },
+  toggleOpt(d){ ui.setup[d.k] = !ui.setup[d.k]; render(); },
+  startGame,
+  setVal(d){
+    const e = entryOf(d.pid); const v = +d.v;
+    e[d.f] = e[d.f] === v && d.f === 'bid' ? null : v;
+    if (d.f === 'bid' && e.bid == null) e.bid = null;
+    ui.flash[d.pid] = true; commit();
+  },
+  bidAdj(d){ const e = entryOf(d.pid); const r = activeRound(); e.bid = clamp((e.bid||0) + +d.d, 0, r.cards); ui.flash[d.pid] = true; commit(); },
+  setShot(d){ entryOf(d.pid).shot = d.v; commit(); },
+  toPhase(d){
+    const g = db.current; const r = activeRound();
+    if (d.v === 'result' && !g.players.every(p => r.entries[p.id].bid != null)) return;
+    g.phase = d.v; save(); render(); window.scrollTo({top:0, behavior:'smooth'});
+  },
+  toggleBonus(d){ ui.open[d.pid] = !ui.open[d.pid]; render(); },
+  inc(d){ const e = entryOf(d.pid); const b = BONUS.find(x => x.k === d.f); e[d.f] = clamp((e[d.f]||0) + +d.d, 0, b.max); ui.flash[d.pid] = true; commit(); },
+  flag(d){
+    const e = entryOf(d.pid); const on = !e[d.f]; const r = activeRound();
+    const b = BONUS.find(x => x.k === d.f);
+    if (on && b.unique) Object.entries(r.entries).forEach(([pid, x]) => { if (pid !== d.pid && x[d.f]){ x[d.f] = false; toast(b.t + ' réattribué'); } });
+    e[d.f] = on; ui.flash[d.pid] = true; commit();
+  },
+  setWager(d){ entryOf(d.pid).wager = +d.v; ui.flash[d.pid] = true; commit(); },
+  setHarry(d){ entryOf(d.pid).harry = +d.v; ui.flash[d.pid] = true; commit(); },
+  finishRound(){ const v = validateTricks(db.current, activeRound()); if (!v.ok) return; finishRound(); },
+  closeSummary(){
+    const m = ui.modal; ui.modal = null;
+    if (m && m.last){ ui.view = 'end'; render(); window.scrollTo(0,0); coinRain(); }
+    else { ui.view = 'play'; render(); window.scrollTo(0,0); }
+  },
+  closeSummaryBoard(){ ui.modal = null; ui.view = 'board'; ui.boardId = null; render(); window.scrollTo(0,0); },
+  editRound(d){
+    const g = db.current; const i = +d.i; if (!g || !g.rounds[i] || !g.rounds[i].done) return;
+    ui.edit = i; ui.draft = clone(g.rounds[i]); ui.open = {}; ui.view = 'play'; render(); window.scrollTo(0,0);
+  },
+  cancelEdit(){ ui.edit = null; ui.draft = null; ui.view = 'board'; render(); window.scrollTo(0,0); },
+  saveEdit(){
+    const g = db.current; const v = validateTricks(g, ui.draft); if (!v.ok) return;
+    g.rounds[ui.edit] = ui.draft; const i = ui.edit; ui.edit = null; ui.draft = null; save(); ui.view = 'board'; render(); toast('Manche ' + (i+1) + ' corrigée');
+  },
+  openHist(d){ ui.boardId = d.id; ui.view = 'board'; render(); window.scrollTo(0,0); },
+  delHist(d){
+    const h = db.history.find(x => x.id === d.id); if (!h) return;
+    confirmBox('Supprimer cette partie ?', `La partie du ${esc(dateFr(h.finishedAt||h.createdAt))} sera retirée du journal. Cette action est irréversible.`, 'Supprimer', () => { db.history = db.history.filter(x => x.id !== d.id); save(); ui.modal = null; render(); toast('Partie supprimée'); });
+  },
+  rematch(d){
+    const h = getGame(d.id); if (!h) return;
+    const go = () => {
+      const n = h.players.length;
+      ui.setup = {players:h.players.map((p,i) => ({name:p.name, color:p.color, ph:PIRATE_NAMES[i % PIRATE_NAMES.length]})), scoring:h.settings.scoring, cannon:!!h.settings.cannon, loot:!!h.settings.loot, beasts:!!h.settings.beasts, powers:!!h.settings.powers, format:h.settings.format || 'classic', dealer:((h.startDealer||0) + 1) % n};
+      ui.modal = null; ui.view = 'setup'; ui.boardId = null; render(); window.scrollTo(0,0);
+    };
+    if (db.current) confirmBox('Une partie est en cours', 'Préparer une revanche abandonnera la partie en cours.', 'Continuer', () => { db.current = null; save(); go(); });
+    else go();
+  },
+  rules(){ ui.modal = {type:'rules'}; render(); },
+  closeModal(){ ui.modal = null; pendingConfirm = null; render(); },
+  overlay(d, el, ev){ if (ev.target === el && ui.modal && ui.modal.type !== 'summary') A.closeModal(); },
+  confirmYes(){ const fn = pendingConfirm; pendingConfirm = null; ui.modal = null; if (fn) fn(); else render(); },
+  hideInstall(){ db.prefs.hideInstall = true; save(); render(); },
+  async export(){
+    const data = JSON.stringify({app:'skull-king-carnet', version:1, exportedAt:new Date().toISOString(), current:db.current, history:db.history}, null, 2);
+    const name = 'skull-king-scores-' + new Date().toISOString().slice(0,10) + '.json';
+    try {
+      const file = new File([data], name, {type:'application/json'});
+      if (navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:'Scores Skull King'});
+        toast('Scores exportés'); return;
+      }
+    } catch(e){ if (e && e.name === 'AbortError') return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], {type:'application/json'}));
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000); toast('Scores exportés');
+  },
+  import(){ $('#importFile').value = ''; $('#importFile').click(); },
+};
+
+/* =========================================================
+   Événements
+   ========================================================= */
+document.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-a]'); if (!el || el.disabled) return;
+  const fn = A[el.dataset.a]; if (!fn) return;
+  if (el.dataset.a === 'overlay' && ev.target !== el) return;
+  fn(el.dataset, el, ev);
+});
+document.addEventListener('input', ev => {
+  const el = ev.target;
+  if (el.dataset.in === 'pname' && ui.setup){ ui.setup.players[+el.dataset.i].name = el.value; }
+});
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape' && ui.modal && ui.modal.type !== 'summary') A.closeModal();
+  if (ev.key === 'Enter' && ev.target.dataset && ev.target.dataset.in === 'pname'){
+    const inputs = [...document.querySelectorAll('[data-in="pname"]')]; const i = inputs.indexOf(ev.target);
+    if (i < inputs.length - 1) inputs[i+1].focus(); else ev.target.blur();
+  }
+});
+$('#importFile').addEventListener('change', ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result);
+      const valid = g => g && Array.isArray(g.players) && Array.isArray(g.rounds) && g.settings && g.id;
+      const hist = (Array.isArray(d.history) ? d.history : []).filter(valid);
+      const ids = new Set(db.history.map(h => h.id));
+      const added = hist.filter(h => !ids.has(h.id));
+      db.history = [...db.history, ...added].sort((a,b) => (b.finishedAt||b.createdAt) - (a.finishedAt||a.createdAt));
+      let msg = plural(added.length, 'partie importée', 'parties importées');
+      if (!db.current && valid(d.current)){ db.current = d.current; msg += ' + partie en cours'; }
+      save(); render(); toast(msg);
+    } catch(e){ toast('Fichier illisible'); }
+  };
+  rd.readAsText(f);
+});
+window.addEventListener('storage', e => { if (e.key === STORE){ db = load(); render(); } });
+
+render();
+
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+})();
+</script>
+</body>
+</html>
