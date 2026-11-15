@@ -165,7 +165,9 @@ h3{font-size:22px}
 
 /* ---------- Setup ---------- */
 .setup-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:start}
-.crew{display:grid;gap:8px}
+.setup-grid > *,.home-grid > *,.stack > *{min-width:0}
+.crew{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.crew-row input[type=text]{width:0}
 .crew-row{display:flex;align-items:center;gap:8px;padding:6px;border-radius:10px;background:rgba(255,250,235,.35);box-shadow:inset 0 0 0 1px rgba(42,28,16,.12)}
 .swatch{width:40px;height:40px;border-radius:50%;flex:none;background:var(--pc);box-shadow:0 0 0 2px var(--parch),0 0 0 3.5px var(--ink-soft);position:relative}
 .swatch::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.45),transparent 50%)}
@@ -186,7 +188,7 @@ h3{font-size:22px}
 .opt-card .oc-t{font-family:var(--title);font-size:22px;display:flex;align-items:center;gap:8px}
 .opt-card .oc-t svg{width:22px;height:22px;color:var(--gold-lo)}
 .opt-card .oc-d{font-size:15px;color:var(--ink-soft);margin-top:2px}
-.formats{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.formats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .formats .opt-card{padding:10px 12px}
 .formats .oc-t{font-size:19px}
 .seq{font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;margin-top:3px;letter-spacing:.02em}
@@ -241,7 +243,7 @@ button.vdot.done:hover{filter:brightness(1.1)}
 .seas svg{width:18px;height:18px;color:var(--gold)}
 
 .players{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
-.pcard{padding:14px 16px 14px 22px;overflow:hidden}
+.pcard{padding:14px 16px 14px 22px;overflow:hidden;scroll-margin-top:calc(env(safe-area-inset-top) + 76px)}
 .pcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:linear-gradient(180deg,var(--pc),color-mix(in srgb,var(--pc) 60%,#000));z-index:2;border-radius:var(--radius) 0 0 var(--radius)}
 .pc-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .avatar{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;font-family:var(--title);font-size:22px;color:#fff;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--pc) 70%,#fff),var(--pc) 55%,color-mix(in srgb,var(--pc) 70%,#000));box-shadow:0 0 0 2px var(--gold),0 2px 6px rgba(0,0,0,.4);text-shadow:0 1px 2px rgba(0,0,0,.5);position:relative}
@@ -422,8 +424,14 @@ table.board{border-collapse:separate;border-spacing:0;width:100%;min-width:max-c
   .pod .avatar{width:50px;height:50px;font-size:26px}
   .pod .pn{font-size:16px}
   .pod .pv{font-size:22px}
-  .crew-row .move{display:none}
-  #toast{top:calc(env(safe-area-inset-top) + 74px);bottom:auto;transform:translateX(-50%) translateY(-20px)}
+  .crew-row{gap:6px;padding:5px}
+  .crew-row .move{display:flex;flex-direction:column}
+  .crew-row .move .icon-btn{width:30px;height:22px}
+  .crew-row .move .icon-btn svg{width:16px;height:16px}
+  .swatch{width:34px;height:34px}
+  .crew-row input[type=text]{height:42px;font-size:17px;padding:0 10px}
+  .formats{grid-template-columns:1fr 1fr}
+  #toast{top:calc(env(safe-area-inset-top) + 8px);bottom:auto;transform:translateX(-50%) translateY(-20px)}
   #toast.show{transform:translateX(-50%)}
   main{padding:16px 12px 150px}
   .pcard{padding:12px 12px 12px 18px}
@@ -431,11 +439,52 @@ table.board{border-collapse:separate;border-spacing:0;width:100%;min-width:max-c
   .chip{width:100%;max-width:48px;height:auto}
   .players{gap:12px}
   .round-head{gap:10px}
+  .round-meta{gap:6px}
   .round-meta .tag{font-size:14px;padding:3px 10px}
+  .phases{width:100%;margin:4px 0 14px}
+  .phase{flex:1;justify-content:center;padding:9px 6px}
+  .actionbar{padding:10px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+  .actionbar-in{gap:8px}
+  .ab-status{font-size:14px}
+  .hero p{font-size:17px}
+  .hero-actions{width:100%;flex-direction:column}
+  .hero-actions .btn{width:100%}
+  .nav{gap:0}
+  .nav button{flex-direction:column;gap:1px;padding:4px 7px;font-size:10px;letter-spacing:.03em;border-radius:10px}
+  .nav button span{display:block}
+  .nav button svg{width:20px;height:20px}
+  .brand svg{width:36px;height:36px}
+  .rank-strip{grid-template-columns:1fr;gap:8px;margin-bottom:16px}
+  .rank-card{padding:8px 12px;gap:10px}
+  .rank-card .rk{font-size:22px;width:22px}
+  .rank-card .rv{font-size:22px}
+  .board th,.board td{padding:7px 5px}
+  .board .ph{min-width:62px}
+  .board .ph .nm{max-width:66px;font-size:12px}
+  .board td.rcol{font-size:17px}
+  .board td.rcol small{display:block;margin:0;font-size:11px}
+  .cell-pts{font-size:16px}
+  .cell-sub{font-size:11px}
+  .board tfoot td{font-size:19px}
+  .chart-box{padding:12px 10px 6px}
+  .sec-head{margin:6px 0 12px}
+  .overlay{place-items:end stretch;padding:0}
+  .dialog,.dialog.wide{max-width:none;border-radius:20px 20px 0 0;padding:12px 18px calc(18px + env(safe-area-inset-bottom));max-height:88vh;animation:sheet .32s cubic-bezier(.2,.8,.2,1)}
+  .dialog::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:rgba(42,28,16,.25);margin:0 auto 12px;position:relative;z-index:2}
+  .dialog .dlg-actions{flex-direction:column-reverse}
+  .dialog .dlg-actions .btn{width:100%}
+  .end-actions{flex-direction:column}
+  .end-actions .btn{width:100%}
+  .board-actions .btn{flex:1}
   .dealer-btn span{display:none}
 }
 .pv,.bl-v,.pc-total .v,.bt-v,.rv,.sr-tt,.board tfoot td:not(.rcol),.pod .pv,.fame b,.round-title .n,h1 .n,.hist-win .sc,.rank-card .rk,.sr-rk,.pod .step,.board td.rcol{font-family:var(--num)!important;font-weight:700!important;letter-spacing:-.01em}
 .round-title .n,h1 .n{font-size:.85em;color:var(--gold-hi)}
+.chip.suggest:not(.on){box-shadow:inset 0 0 0 2.5px var(--gold-lo),0 0 0 3px rgba(217,173,75,.35);animation:hintp 1.6s ease-in-out infinite}
+@keyframes hintp{50%{box-shadow:inset 0 0 0 2.5px var(--gold-lo),0 0 0 7px rgba(217,173,75,.12)}}
+.btn.ready{animation:readyp 1.3s ease-in-out 3}
+@keyframes readyp{50%{box-shadow:0 0 0 1px #6e4a14,inset 0 1px 0 rgba(255,255,255,.65),0 0 0 7px rgba(244,217,140,.35),0 4px 18px rgba(217,173,75,.6)}}
+.sug-note{font-size:13px;color:var(--gold-lo);font-weight:700;margin-left:auto;letter-spacing:0;text-transform:none}
 @media (hover:none){
   .chip:hover{transform:none;box-shadow:inset 0 0 0 1.5px rgba(138,106,58,.55),0 1px 2px rgba(0,0,0,.15)}
   .chip.on:hover{transform:scale(1.08);box-shadow:0 0 0 2px #6e4a14,inset 0 -2px 0 rgba(0,0,0,.2),0 3px 8px rgba(110,74,20,.45)}
@@ -444,6 +493,13 @@ table.board{border-collapse:separate;border-spacing:0;width:100%;min-width:max-c
 .install{display:flex;gap:12px;align-items:center;margin-top:22px;padding:14px 16px}
 .install svg{width:28px;height:28px;flex:none;color:var(--gold-lo)}
 .install .share{display:inline-block;width:18px;height:18px;vertical-align:-3px}
+@keyframes sheet{from{transform:translateY(100%)}}
+@media (hover:none),(max-width:640px){
+  .stepper button{width:40px;height:40px}
+  .stepper button svg{width:16px;height:16px}
+  .stepper output{min-width:28px}
+  .icon-btn{width:40px;height:40px}
+}
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
 </style>
 </head>
@@ -643,6 +699,7 @@ function render(){
   ui.lastView = ui.view + (ui.boardId||'');
   $('#modal-root').innerHTML = viewModal();
   ui.flash = {};
+  keepAwake(ui.view === 'play' && !!db.current);
 }
 
 function topbar(){
@@ -698,7 +755,7 @@ function viewHome(){
   ${resume ? `<div style="margin-top:26px">${resume}</div>` : ''}
   <div class="home-grid">
     <section class="parch pad">
-      <div class="row" style="justify-content:space-between"><h2>Journal des traversées</h2><span class="eyebrow">${plural(hist.length,'partie')}</span></div>
+      <div class="row" style="justify-content:space-between"><h2>Journal des traversées</h2><span class="eyebrow">${hist.length ? plural(hist.length,'partie') : 'aucune partie'}</span></div>
       ${hist.length ? `<ul class="hist-list" style="margin-top:8px">${hist.slice(0, 30).map(histItem).join('')}</ul>`
         : `<div class="empty">${I.ship}Aucune partie terminée pour l’instant.<br>Vos traversées apparaîtront ici.</div>`}
     </section>
@@ -873,9 +930,9 @@ function pcHead(p, isDealer, isLead, total, leader, right){
     ${right}
   </div>`;
 }
-function chipRow(pid, field, value, max){
+function chipRow(pid, field, value, max, sug=null){
   let h = '';
-  for (let v = 0; v <= max; v++) h += `<button class="chip ${v===0?'zero':''} ${value===v?'on':''}" data-a="setVal" data-pid="${pid}" data-f="${field}" data-v="${v}" aria-pressed="${value===v}">${v}</button>`;
+  for (let v = 0; v <= max; v++) h += `<button class="chip ${v===0?'zero':''} ${value===v?'on':''} ${sug===v?'suggest':''}" data-a="setVal" data-pid="${pid}" data-f="${field}" data-v="${v}" aria-pressed="${value===v}">${v}</button>`;
   return `<div class="chips">${h}</div>`;
 }
 function cardBid(g, r, p, isDealer, isLead, total, leader){
@@ -889,7 +946,7 @@ function cardBid(g, r, p, isDealer, isLead, total, leader){
         <button data-a="setShot" data-pid="${p.id}" data-v="cannon" aria-pressed="${e.shot==='cannon'}">${I.cannon} Boulet de canon</button>
       </div>`;
   }
-  return `<article class="parch pcard" style="--pc:${p.color}">
+  return `<article class="parch pcard" style="--pc:${p.color}" data-card="${p.id}">
     ${pcHead(p, isDealer, isLead, total, leader, right)}
     <div class="label">Annonce<span class="grow"></span></div>
     ${chipRow(p.id, 'bid', e.bid, r.cards)}
@@ -904,6 +961,11 @@ function cardResult(g, r, p, isDealer, isLead, total, leader){
       ? `<div class="pv ${cls(sc.total)}${flash}">${fmt(sc.total)}</div><div class="pl ${cls(sc.total)}">${sc.exact ? 'Réussi' : s.scoring==='rascal' && sc.diff===1 && e.shot!=='cannon' ? 'Écart 1' : 'Raté'}</div>`
       : `<div class="pv nul">…</div><div class="pl nul">en attente</div>`}</div>`;
   const effBid = clamp(e.bid + (s.powers ? e.harry||0 : 0), 0, r.cards);
+  let sug = null;
+  if (e.tricks == null && !s.beasts){
+    const missing = g.players.filter(q => r.entries[q.id].tricks == null);
+    if (missing.length === 1){ const rest = r.cards - g.players.reduce((a,q) => a + (r.entries[q.id].tricks ?? 0), 0); if (rest >= 0 && rest <= r.cards) sug = rest; }
+  }
   const raw = bonusRaw(e, s);
   const open = !!ui.open[p.id];
   const shotTag = s.scoring==='rascal' && s.cannon ? `<span class="badge">${e.shot==='cannon' ? I.cannon + 'Boulet' : I.grape + 'Chevrotine'}</span>` : '';
@@ -914,7 +976,7 @@ function cardResult(g, r, p, isDealer, isLead, total, leader){
     else verdict = `<div class="verdict bad">${I.x} ${sc.diff === 1 ? 'Raté d’un pli' : 'Raté de ' + sc.diff + ' plis'} : ${describe(sc, s, r.cards, e)}</div>`;
   } else verdict = `<div class="verdict">Indiquez le nombre de plis remportés.</div>`;
 
-  return `<article class="parch pcard" style="--pc:${p.color}">
+  return `<article class="parch pcard" style="--pc:${p.color}" data-card="${p.id}">
     ${pcHead(p, isDealer, isLead, total, leader, right)}
     <div class="bidline">
       <span class="bl-l">Mise</span>
@@ -926,8 +988,8 @@ function cardResult(g, r, p, isDealer, isLead, total, leader){
       ${s.powers && e.harry ? `<span class="harry">→ ${effBid} (Harry)</span>` : ''}
       ${shotTag}
     </div>
-    <div class="label">Plis remportés<span class="grow"></span></div>
-    ${chipRow(p.id, 'tricks', e.tricks, r.cards)}
+    <div class="label">Plis remportés<span class="grow"></span>${sug != null ? `<span class="sug-note">→ ${sug} pour compléter</span>` : ''}</div>
+    ${chipRow(p.id, 'tricks', e.tricks, r.cards, sug)}
     <button class="bonus-toggle" data-a="toggleBonus" data-pid="${p.id}" aria-expanded="${open}">
       ${I.coins} Bonus ${sc && raw && sc.bonus < raw ? `<span class="lost">${sc.bonus ? 'réduits' : 'perdus'}</span>` : ''}
       <span class="bt-v">${raw ? '+' + raw : '0'}</span>
@@ -1242,6 +1304,23 @@ function startGame(){
   save(); render(); window.scrollTo(0,0);
   toast('Larguez les amarres ! Manche 1');
 }
+/* Après une saisie : amène le joueur suivant à l'écran (téléphone),
+   ou met en avant le bouton de validation quand tout est saisi. */
+function advance(pid, field){
+  const g = db.current; if (!g) return; const r = activeRound(); const n = g.players.length;
+  const i = g.players.findIndex(p => p.id === pid);
+  for (let k = 1; k < n; k++){
+    const q = g.players[(i + k) % n];
+    if (r.entries[q.id][field] == null){
+      if (field === 'bid' && window.innerWidth < 700){
+        const el = document.querySelector(`[data-card="${q.id}"]`);
+        if (el) setTimeout(() => el.scrollIntoView({behavior:'smooth', block:'start'}), 170);
+      }
+      return;
+    }
+  }
+  const b = document.querySelector('.actionbar .btn-gold:not(:disabled)'); if (b) b.classList.add('ready');
+}
 function finishRound(){
   const g = db.current; const i = g.current; const r = g.rounds[i];
   r.done = true; r.finishedAt = Date.now();
@@ -1282,10 +1361,10 @@ const A = {
   toggleOpt(d){ ui.setup[d.k] = !ui.setup[d.k]; render(); },
   startGame,
   setVal(d){
-    const e = entryOf(d.pid); const v = +d.v;
-    e[d.f] = e[d.f] === v && d.f === 'bid' ? null : v;
-    if (d.f === 'bid' && e.bid == null) e.bid = null;
+    const e = entryOf(d.pid); const v = +d.v; const prev = e[d.f];
+    e[d.f] = prev === v && d.f === 'bid' ? null : v;
     ui.flash[d.pid] = true; commit();
+    if (prev == null && e[d.f] != null) advance(d.pid, d.f);
   },
   bidAdj(d){ const e = entryOf(d.pid); const r = activeRound(); e.bid = clamp((e.bid||0) + +d.d, 0, r.cards); ui.flash[d.pid] = true; commit(); },
   setShot(d){ entryOf(d.pid).shot = d.v; commit(); },
@@ -1357,12 +1436,33 @@ const A = {
   import(){ $('#importFile').value = ''; $('#importFile').click(); },
 };
 
+function haptic(){
+  try {
+    if (navigator.vibrate){ navigator.vibrate(8); return; }
+    const l = document.createElement('label'); l.ariaHidden = 'true'; l.style.display = 'none';
+    const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); l.appendChild(i);
+    document.head.appendChild(l); l.click(); l.remove();
+  } catch(e){}
+}
+/* Écran toujours allumé pendant une partie */
+let wakeLock = null;
+async function keepAwake(on){
+  try {
+    if (on && !wakeLock && 'wakeLock' in navigator && document.visibilityState === 'visible'){
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } else if (!on && wakeLock){ const w = wakeLock; wakeLock = null; await w.release(); }
+  } catch(e){ wakeLock = null; }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') keepAwake(ui.view === 'play' && !!db.current); });
+
 /* =========================================================
    Événements
    ========================================================= */
 document.addEventListener('click', ev => {
   const el = ev.target.closest('[data-a]'); if (!el || el.disabled) return;
   const fn = A[el.dataset.a]; if (!fn) return;
+  if (el.matches('.chip, .stepper button, .mini-switch, .seg button, .toggle, .opt-card, .dealer-btn, .btn-gold, .bonus-toggle')) haptic();
   if (el.dataset.a === 'overlay' && ev.target !== el) return;
   fn(el.dataset, el, ev);
 });
