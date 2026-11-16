@@ -517,7 +517,6 @@ svg.share{display:inline-block;width:18px;height:18px;vertical-align:-3px}
 <div id="app"></div>
 <div id="modal-root"></div>
 <div id="toast" role="status" aria-live="polite"></div>
-<input type="file" id="importFile" accept="application/json,.json" hidden>
 
 <script>
 (() => {
@@ -712,6 +711,7 @@ function render(){
   $('#modal-root').innerHTML = viewModal();
   ui.flash = {};
   keepAwake(ui.view === 'play' && !!db.current);
+  if (!pdfAssets && ['home','board','end'].includes(ui.view) && (db.current || db.history.length)) setTimeout(() => ensurePdfAssets().catch(() => {}), 1200);
 }
 
 function topbar(){
@@ -781,8 +781,7 @@ function viewHome(){
   ${installHint()}
   <div class="foot-tools">
     <button class="btn btn-ghost btn-sm" data-a="share">${I.send} Partager l’app</button>
-    <button class="btn btn-ghost btn-sm" data-a="export">${I.download} Exporter les scores</button>
-    <button class="btn btn-ghost btn-sm" data-a="import">${I.upload} Importer</button>
+    ${g || hist.length ? `<button class="btn btn-ghost btn-sm" data-a="exportPdf">${I.download} Exporter le classement (PDF)</button>` : ''}
   </div>`;
 }
 const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
@@ -1137,8 +1136,8 @@ function viewBoard(){
     ${chartSVG(g)}
   </section>
   <div class="board-actions">
-    ${readonly ? `<button class="btn btn-ghost" data-a="nav" data-v="home">${I.left} Retour au port</button><button class="btn btn-gold" data-a="rematch" data-id="${g.id}">${I.anchor} Revanche</button>`
-      : `<button class="btn btn-gold" data-a="nav" data-v="play">${I.wheel} Retour à la manche</button>`}
+    ${readonly ? `<button class="btn btn-ghost" data-a="nav" data-v="home">${I.left} Retour au port</button><button class="btn btn-ghost" data-a="exportPdf" data-id="${g.id}">${I.download} PDF</button><button class="btn btn-gold" data-a="rematch" data-id="${g.id}">${I.anchor} Revanche</button>`
+      : `<button class="btn btn-ghost" data-a="exportPdf">${I.download} Exporter en PDF</button><button class="btn btn-gold" data-a="nav" data-v="play">${I.wheel} Retour à la manche</button>`}
   </div>`;
 }
 function niceStep(r){ const p = 10 ** Math.floor(Math.log10(r || 1)); const m = r / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
@@ -1176,6 +1175,176 @@ function chartSVG(g){
   return s + '</svg>';
 }
 
+/* ---------------- Statistiques ---------------- */
+function gameStats(g){
+  const st = {}; g.players.forEach(p => st[p.id] = {exact:0, rounds:0, bonus:0, best:-Infinity, worst:Infinity, zero:0});
+  g.rounds.forEach(r => { if (!r.done) return; g.players.forEach(p => { const sc = scoreEntry(r.entries[p.id], r.cards, g.settings); const x = st[p.id]; x.rounds++; if (sc.exact) x.exact++; x.bonus += sc.bonus; x.best = Math.max(x.best, sc.total); x.worst = Math.min(x.worst, sc.total); if (sc.bid === 0 && sc.exact) x.zero++; }); });
+  return st;
+}
+function gameAwards(g, names, fmtN){
+  const st = gameStats(g); const done = g.rounds.filter(r => r.done).length;
+  if (!done) return [];
+  const top = (key, dir=1) => { const v = g.players.map(p => st[p.id][key]); const best = dir > 0 ? Math.max(...v) : Math.min(...v); return {v:best, who:g.players.filter(p => st[p.id][key] === best)}; };
+  const ex = top('exact'), bo = top('bonus'), be = top('best'), wo = top('worst', -1), ze = top('zero');
+  return [
+    {i:I.target, t:'Œil de lynx', d:`${names(ex.who)} — ${ex.v} mise${ex.v>1?'s':''} exacte${ex.v>1?'s':''} sur ${done}`},
+    bo.v > 0 ? {i:I.coins, t:'Chasseur de trésors', d:`${names(bo.who)} — ${bo.v} pts de bonus`} : null,
+    {i:I.crown, t:'Coup d’éclat', d:`${names(be.who)} — ${fmtN(be.v)} en une manche`},
+    ze.v > 0 ? {i:I.wave, t:'Fantôme des mers', d:`${names(ze.who)} — ${ze.v} mise${ze.v>1?'s':''} zéro tenue${ze.v>1?'s':''}`} : null,
+    wo.v < 0 ? {i:I.storm, t:'Naufrage', d:`${names(wo.who)} — ${fmtN(wo.v)} en une manche`} : null,
+  ].filter(Boolean);
+}
+
+/* ---------------- Export PDF du classement ---------------- */
+const JSPDF_URL = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+const JSPDF_SRI = 'sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk';
+let pdfAssets = null;
+function loadScript(src, integrity){
+  return new Promise((res, rej) => {
+    const sc = document.createElement('script'); sc.src = src; sc.integrity = integrity; sc.crossOrigin = 'anonymous';
+    sc.onload = res; sc.onerror = () => { sc.remove(); rej(new Error('script')); };
+    document.head.appendChild(sc);
+  });
+}
+function abToB64(buf){
+  const b = new Uint8Array(buf); let s = '';
+  for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+const blobToDataURL = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
+function ensurePdfAssets(){
+  if (!pdfAssets) pdfAssets = Promise.all([
+    window.jspdf ? Promise.resolve() : loadScript(JSPDF_URL, JSPDF_SRI),
+    fetch('fonts/PirataOne-Regular.ttf').then(r => { if (!r.ok) throw new Error('font'); return r.arrayBuffer(); }).then(abToB64),
+    fetch('icons/icon-192.png').then(r => { if (!r.ok) throw new Error('logo'); return r.blob(); }).then(blobToDataURL),
+  ]).then(([, font, logo]) => ({font, logo})).catch(e => { pdfAssets = null; throw e; });
+  return pdfAssets;
+}
+/* Polices standard du PDF : on se limite au jeu Latin-1. */
+const pdfTxt = v => String(v ?? '').replace(/ \u2014 /g, ' : ').replace(/\u0152/g, 'Oe').replace(/\u0153/g, 'oe').replace(/[\u2212\u2013\u2014]/g, '-').replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"').replace(/\u2026/g, '...').replace(/[^\x20-\x7E\u00A0-\u00FF]/g, '').trim();
+const pdfNum = n => n > 0 ? '+' + n : n < 0 ? '-' + Math.abs(n) : '0';
+const hexRgb = h => { const x = parseInt(h.slice(1), 16); return [(x >> 16) & 255, (x >> 8) & 255, x & 255]; };
+
+function buildPdf(g, assets){
+  const {jsPDF} = window.jspdf;
+  const n = g.players.length; const landscape = n > 5;
+  const doc = new jsPDF({orientation: landscape ? 'landscape' : 'portrait', unit:'mm', format:'a4'});
+  doc.addFileToVFS('PirataOne.ttf', assets.font); doc.addFont('PirataOne.ttf', 'Pirata', 'normal');
+  const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
+  const M = 16; const INK = [42,28,16], SOFT = [107,82,54], GOLD = [168,122,36], BLOOD = [165,38,43], GOOD = [47,122,74];
+  const t = totals(g), order = sorted(g, t), rk = ranks(g, t), st = gameStats(g);
+  const done = g.rounds.filter(r => r.done).length; const finished = !!g.finishedAt;
+  const settings = g.settings; const fmtSel = FORMATS.find(f => f.id === settings.format);
+  const page = () => {
+    doc.setFillColor(243,231,201); doc.rect(0, 0, W, H, 'F');
+    doc.setDrawColor(...GOLD); doc.setLineWidth(.8); doc.rect(7, 7, W-14, H-14);
+    doc.setLineWidth(.25); doc.rect(9, 9, W-18, H-18);
+  };
+  const ink = c => doc.setTextColor(...c);
+  const fit = (txt, w) => { let s = txt; while (s.length > 1 && doc.getTextWidth(s) > w) s = s.slice(0, -1); return s === txt ? s : s.trim() + '...'; };
+  page();
+
+  // En-tête
+  doc.addImage(assets.logo, 'PNG', M, 14, 24, 24);
+  doc.setFont('Pirata', 'normal'); doc.setFontSize(30); ink(INK); doc.text('Skull King', M + 30, 26);
+  doc.setFont('times', 'italic'); doc.setFontSize(13); ink(SOFT); doc.text('Carnet de bord - Classement', M + 30, 34);
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5);
+  const when = pdfTxt(new Date(g.finishedAt || g.createdAt).toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'}));
+  doc.text(when, W - M, 21, {align:'right'});
+  doc.text(finished ? 'Partie terminée' : `Partie en cours - manche ${Math.min(g.current + 1, g.rounds.length)} sur ${g.rounds.length}`, W - M, 27, {align:'right'});
+  doc.text(pdfTxt(`Score ${settings.scoring === 'rascal' ? 'Rascal' + (settings.cannon ? ' (boulet de canon)' : '') : 'Skull King'} · ${fmtSel ? fmtSel.name : ''}`), W - M, 33, {align:'right'});
+  let y = 44; doc.setDrawColor(...GOLD); doc.setLineWidth(.6); doc.line(M, y, W - M, y);
+
+  // Classement
+  y += 11; doc.setFont('Pirata', 'normal'); doc.setFontSize(19); ink(INK); doc.text(finished ? 'Classement final' : 'Classement provisoire', M, y);
+  y += 4;
+  order.forEach((p, i) => {
+    const rowH = 10; const top = y; y += rowH;
+    if (i % 2 === 0){ doc.setFillColor(233,216,174); doc.rect(M, top, W - 2*M, rowH, 'F'); }
+    const cy = top + rowH/2;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); ink(rk[p.id] === 1 && done ? BLOOD : SOFT); doc.text(String(rk[p.id]), M + 6, cy + 1.6, {align:'center'});
+    doc.setFillColor(...hexRgb(p.color)); doc.circle(M + 16, cy, 3, 'F');
+    doc.setFont('times', 'bold'); doc.setFontSize(13); ink(INK); doc.text(fit(pdfTxt(p.name), W/2 - M - 26), M + 23, cy + 1.6);
+    const x = st[p.id];
+    doc.setFont('times', 'normal'); doc.setFontSize(10.5); ink(SOFT);
+    doc.text(x.rounds ? `${x.exact}/${x.rounds} mises exactes · bonus ${pdfNum(x.bonus)}` : '', W - M - 34, cy + 1.4, {align:'right'});
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(14); ink(t[p.id] < 0 ? BLOOD : INK); doc.text(fmtTotal(t[p.id]).replace('−','-'), W - M - 4, cy + 1.8, {align:'right'});
+  });
+
+  // Distinctions
+  const awards = gameAwards(g, arr => arr.map(p => pdfTxt(p.name)).join(' & '), pdfNum);
+  if (finished && awards.length){
+    y += 10; doc.setFont('Pirata', 'normal'); doc.setFontSize(16); ink(INK); doc.text('Distinctions', M, y); y += 2;
+    awards.forEach(a => { y += 6; doc.setFont('times', 'bold'); doc.setFontSize(11); ink(GOLD); doc.text(pdfTxt(a.t), M + 2, y); doc.setFont('times', 'normal'); ink(INK); doc.text(fit(pdfTxt(a.d), W - 2*M - 52), M + 48, y); });
+  }
+
+  // Détail des manches
+  const head = () => {
+    doc.setFillColor(214,190,140); doc.rect(M, y, W - 2*M, 9, 'F');
+    doc.setFont('times', 'bold'); doc.setFontSize(10); ink(INK); doc.text('Manche', M + 2, y + 6);
+    g.players.forEach((p, i) => { const cx = M + firstW + colW*i + colW/2; doc.setFillColor(...hexRgb(p.color)); doc.circle(cx - doc.getTextWidth(fit(pdfTxt(p.name), colW - 8))/2 - 3, y + 4.6, 1.5, 'F'); doc.text(fit(pdfTxt(p.name), colW - 8), cx + 1, y + 6, {align:'center'}); });
+    y += 9;
+  };
+  const firstW = 24; const colW = (W - 2*M - firstW) / n;
+  y += 12; if (y > H - 50){ doc.addPage(); page(); y = 20; }
+  doc.setFont('Pirata', 'normal'); doc.setFontSize(16); ink(INK); doc.text('Détail des manches', M, y); y += 3;
+  head();
+  const cum = {}; g.players.forEach(p => cum[p.id] = 0);
+  g.rounds.forEach((r, i) => {
+    const rowH = 10;
+    if (y + rowH > H - 22){ doc.addPage(); page(); y = 20; head(); }
+    if (i % 2 === 1){ doc.setFillColor(236,222,186); doc.rect(M, y, W - 2*M, rowH, 'F'); }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); ink(INK); doc.text(String(i + 1), M + 2, y + 6.2);
+    doc.setFont('times', 'normal'); doc.setFontSize(8.5); ink(SOFT); doc.text(`${r.cards} c.`, M + 9, y + 6.2);
+    g.players.forEach((p, k) => {
+      const cx = M + firstW + colW*k + colW/2;
+      if (!r.done){ ink([170,150,115]); doc.setFontSize(10); doc.text('-', cx, y + 6.2, {align:'center'}); return; }
+      const e = r.entries[p.id]; const sc = scoreEntry(e, r.cards, g.settings); cum[p.id] += sc.total;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); ink(sc.total > 0 ? GOOD : sc.total < 0 ? BLOOD : SOFT); doc.text(pdfNum(sc.total), cx, y + 4.6, {align:'center'});
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); ink(SOFT); doc.text(`${sc.bid}/${e.tricks}${sc.bonus ? ' *' : ''} · ${cum[p.id]}`, cx, y + 8.3, {align:'center'});
+    });
+    y += rowH;
+  });
+  doc.setDrawColor(...GOLD); doc.setLineWidth(.5); doc.line(M, y, W - M, y);
+  doc.setFillColor(214,190,140); doc.rect(M, y, W - 2*M, 10, 'F');
+  doc.setFont('times', 'bold'); doc.setFontSize(11); ink(INK); doc.text('Total', M + 2, y + 6.6);
+  const maxT = Math.max(...g.players.map(p => t[p.id]));
+  g.players.forEach((p, k) => { doc.setFont('helvetica', 'bold'); doc.setFontSize(12); ink(t[p.id] === maxT && done ? BLOOD : INK); doc.text(String(t[p.id]), M + firstW + colW*k + colW/2, y + 6.8, {align:'center'}); });
+  y += 15;
+  doc.setFont('times', 'italic'); doc.setFontSize(8.5); ink(SOFT);
+  if (y < H - 20) doc.text('Lecture : points de la manche, puis mise/plis · cumul.  * = bonus gagnés.', M, y);
+
+  // Pied de page
+  const pages = doc.getNumberOfPages();
+  for (let i = 1; i <= pages; i++){
+    doc.setPage(i); doc.setFont('times', 'italic'); doc.setFontSize(8.5); ink(SOFT);
+    doc.text(pdfTxt(`Généré le ${new Date().toLocaleDateString('fr-FR')} - Skull King · Carnet de bord`), M, H - 12);
+    doc.text(`${i} / ${pages}`, W - M, H - 12, {align:'right'});
+  }
+  return doc;
+}
+async function exportPdf(g){
+  if (ui.pdfBusy) return; ui.pdfBusy = true; toast('Préparation du PDF…');
+  try {
+    const assets = await ensurePdfAssets();
+    const blob = buildPdf(g, assets).output('blob');
+    const name = `skull-king-classement-${new Date(g.finishedAt || g.createdAt).toISOString().slice(0,10)}.pdf`;
+    const file = new File([blob], name, {type:'application/pdf'});
+    if (navigator.canShare && navigator.canShare({files:[file]})){
+      try { await navigator.share({files:[file], title:'Classement Skull King'}); return; }
+      catch(e){
+        if (e && e.name === 'AbortError') return;
+        // iOS refuse parfois le partage après un chargement : on propose un 2e geste
+        ui.pdfFile = file; ui.modal = {type:'pdf'}; render(); return;
+      }
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('PDF téléchargé');
+  } catch(e){ toast('PDF indisponible : vérifiez la connexion'); }
+  finally { ui.pdfBusy = false; }
+}
+
 /* ---------------- Fin de partie ---------------- */
 function viewEnd(){
   const g = getGame(ui.endId); const t = totals(g); const order = sorted(g, t); const rk = ranks(g, t);
@@ -1184,19 +1353,8 @@ function viewEnd(){
   const podOrder = pod.length === 3 ? [pod[1], pod[0], pod[2]] : pod.length === 2 ? [pod[1], pod[0]] : pod;
   const podium = podOrder.map(p => { const place = order.indexOf(p) + 1; return `<div class="pod p${place}">${avatar(p, '', place===1)}<div class="pn">${esc(p.name)}</div><div class="pv">${fmtTotal(t[p.id])}</div><div class="step">${rk[p.id]}</div></div>`; }).join('');
 
-  // statistiques
-  const st = {}; g.players.forEach(p => st[p.id] = {exact:0, rounds:0, bonus:0, best:-Infinity, worst:Infinity, zero:0});
-  g.rounds.forEach(r => { if (!r.done) return; g.players.forEach(p => { const e = r.entries[p.id]; const sc = scoreEntry(e, r.cards, g.settings); const x = st[p.id]; x.rounds++; if (sc.exact) x.exact++; x.bonus += sc.bonus; x.best = Math.max(x.best, sc.total); x.worst = Math.min(x.worst, sc.total); if (sc.bid === 0 && sc.exact) x.zero++; }); });
-  const top = (key, dir=1) => { const v = g.players.map(p => st[p.id][key]); const best = dir > 0 ? Math.max(...v) : Math.min(...v); return {v:best, who:g.players.filter(p => st[p.id][key] === best)}; };
   const names = arr => arr.map(p => esc(p.name)).join(' & ');
-  const ex = top('exact'), bo = top('bonus'), be = top('best'), wo = top('worst', -1), ze = top('zero');
-  const awards = [
-    {i:I.target, t:'Œil de lynx', d:`${names(ex.who)} — ${ex.v} mise${ex.v>1?'s':''} exacte${ex.v>1?'s':''} sur ${g.rounds.filter(r=>r.done).length}`},
-    bo.v > 0 ? {i:I.coins, t:'Chasseur de trésors', d:`${names(bo.who)} — ${bo.v} pts de bonus`} : null,
-    {i:I.crown, t:'Coup d’éclat', d:`${names(be.who)} — ${fmt(be.v)} en une manche`},
-    ze.v > 0 ? {i:I.wave, t:'Fantôme des mers', d:`${names(ze.who)} — ${ze.v} mise${ze.v>1?'s':''} zéro tenue${ze.v>1?'s':''}`} : null,
-    wo.v < 0 ? {i:I.storm, t:'Naufrage', d:`${names(wo.who)} — ${fmt(wo.v)} en une manche`} : null,
-  ].filter(Boolean);
+  const awards = gameAwards(g, names, fmt);
 
   return `
   <div class="end-hero">
@@ -1210,6 +1368,7 @@ function viewEnd(){
   <div class="end-actions">
     <button class="btn btn-ghost" data-a="nav" data-v="home">${I.anchor} Retour au port</button>
     <button class="btn btn-ghost" data-a="openHist" data-id="${g.id}">${I.board} Tableau détaillé</button>
+    <button class="btn btn-ghost" data-a="exportPdf" data-id="${g.id}">${I.download} Exporter en PDF</button>
     <button class="btn btn-gold" data-a="rematch" data-id="${g.id}">${I.wheel} Revanche</button>
   </div>`;
 }
@@ -1254,6 +1413,11 @@ function viewModal(){
       <div class="dlg-actions">${last
         ? `<button class="btn btn-gold" data-a="closeSummary">${I.crown} Découvrir le podium</button>`
         : `<button class="btn btn-ghost" data-a="closeSummaryBoard">${I.board} Classement</button><button class="btn btn-gold" data-a="closeSummary">${I.ship} Manche ${i+2} · ${g.rounds[i+1].cards} carte${g.rounds[i+1].cards>1?'s':''}</button>`}</div></div>`;
+  } else if (m.type === 'pdf'){
+    inner = `<div class="parch dialog" role="dialog" aria-modal="true" aria-labelledby="dlgT">
+      <h2 id="dlgT">Le PDF est prêt</h2>
+      <p style="font-size:17px">Envoyez-le ou enregistrez-le dans Fichiers (iCloud Drive).</p>
+      <div class="dlg-actions"><button class="btn btn-ghost" data-a="closeModal">Fermer</button><button class="btn btn-gold" data-a="sharePdf">${I.send} Partager le PDF</button></div></div>`;
   } else if (m.type === 'share'){
     const url = appUrl();
     inner = `<div class="parch dialog share-dlg" role="dialog" aria-modal="true" aria-labelledby="dlgT">
@@ -1489,21 +1653,12 @@ const A = {
   overlay(d, el, ev){ if (ev.target === el && ui.modal && ui.modal.type !== 'summary') A.closeModal(); },
   confirmYes(){ const fn = pendingConfirm; pendingConfirm = null; ui.modal = null; if (fn) fn(); else render(); },
   hideInstall(){ db.prefs.hideInstall = true; save(); render(); },
-  async export(){
-    const data = JSON.stringify({app:'skull-king-carnet', version:1, exportedAt:new Date().toISOString(), current:db.current, history:db.history}, null, 2);
-    const name = 'skull-king-scores-' + new Date().toISOString().slice(0,10) + '.json';
-    try {
-      const file = new File([data], name, {type:'application/json'});
-      if (navigator.canShare && navigator.canShare({files:[file]})){
-        await navigator.share({files:[file], title:'Scores Skull King'});
-        toast('Scores exportés'); return;
-      }
-    } catch(e){ if (e && e.name === 'AbortError') return; }
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], {type:'application/json'}));
-    a.download = name; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000); toast('Scores exportés');
+  exportPdf(d){ const g = d.id ? getGame(d.id) : (db.current || db.history[0]); if (g) exportPdf(g); },
+  async sharePdf(){
+    const f = ui.pdfFile; if (!f) return;
+    try { await navigator.share({files:[f], title:'Classement Skull King'}); ui.modal = null; render(); }
+    catch(e){ if (!e || e.name !== 'AbortError') toast('Partage impossible'); }
   },
-  import(){ $('#importFile').value = ''; $('#importFile').click(); },
 };
 
 function haptic(){
@@ -1546,24 +1701,6 @@ document.addEventListener('keydown', ev => {
     const inputs = [...document.querySelectorAll('[data-in="pname"]')]; const i = inputs.indexOf(ev.target);
     if (i < inputs.length - 1) inputs[i+1].focus(); else ev.target.blur();
   }
-});
-$('#importFile').addEventListener('change', ev => {
-  const f = ev.target.files[0]; if (!f) return;
-  const rd = new FileReader();
-  rd.onload = () => {
-    try {
-      const d = JSON.parse(rd.result);
-      const valid = g => g && Array.isArray(g.players) && Array.isArray(g.rounds) && g.settings && g.id;
-      const hist = (Array.isArray(d.history) ? d.history : []).filter(valid);
-      const ids = new Set(db.history.map(h => h.id));
-      const added = hist.filter(h => !ids.has(h.id));
-      db.history = [...db.history, ...added].sort((a,b) => (b.finishedAt||b.createdAt) - (a.finishedAt||a.createdAt));
-      let msg = plural(added.length, 'partie importée', 'parties importées');
-      if (!db.current && valid(d.current)){ db.current = d.current; msg += ' + partie en cours'; }
-      save(); render(); toast(msg);
-    } catch(e){ toast('Fichier illisible'); }
-  };
-  rd.readAsText(f);
 });
 window.addEventListener('storage', e => { if (e.key === STORE){ db = load(); render(); } });
 
