@@ -455,7 +455,6 @@ table.board{border-collapse:separate;border-spacing:0;width:100%;min-width:max-c
   .nav button span{display:block}
   .nav button svg{width:20px;height:20px}
   .brand svg{width:36px;height:36px}
-  .topbar.full .brand > div{display:none}
   .rank-strip{grid-template-columns:1fr;gap:8px;margin-bottom:16px}
   .rank-card{padding:8px 12px;gap:10px}
   .rank-card .rk{font-size:22px;width:22px}
@@ -723,7 +722,6 @@ function topbar(){
     <nav class="nav" aria-label="Navigation">
       ${item('home','anchor','Port')}
       ${g ? item('play','wheel','Manche') + item('board','board','Classement') : ''}
-      <button data-a="share" ${ui.modal && ui.modal.type==='share' ? 'aria-current="page"' : ''}>${I.send}<span>Partager</span></button>
       <button data-a="rules">${I.book}<span>Règles</span></button>
     </nav>
   </div></header>`;
