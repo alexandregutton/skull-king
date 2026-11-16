@@ -1,6 +1,6 @@
 /* Service worker : rend l'app utilisable hors ligne.
    Changer VERSION à chaque mise à jour des fichiers. */
-const VERSION = 'skullking-v4';
+const VERSION = 'skullking-v5';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
